@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { SessionCard } from '@/components/features/session-card'
 import { CalendarDays } from 'lucide-react'
 import { SessionStatusActions } from './session-status-actions'
+import { CoachCreateSessionForm } from './create-session-form'
 
 export default async function CoachSessionsPage() {
   const supabase = await createServerSupabaseClient()
@@ -33,11 +34,14 @@ export default async function CoachSessionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">My Sessions</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your coaching sessions
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">My Sessions</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your coaching sessions
+          </p>
+        </div>
+        <CoachCreateSessionForm coachId={user.id} />
       </div>
 
       {/* Error State */}
@@ -127,7 +131,7 @@ export default async function CoachSessionsPage() {
           <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm font-medium mb-1">No sessions yet</p>
           <p className="text-xs text-muted-foreground">
-            Sessions assigned to you will appear here.
+            Tap &quot;New Session&quot; to create your first session.
           </p>
         </div>
       )}

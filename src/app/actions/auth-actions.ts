@@ -45,33 +45,22 @@ export async function registerUser(input: {
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Pass metadata - the database trigger (handle_new_user) will
+    // auto-create profiles and player_profiles rows
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: input.email,
       password: input.password,
+      options: {
+        data: {
+          full_name: input.full_name,
+          role: input.role,
+          phone: input.phone || null,
+        },
+      },
     })
 
     if (authError) return { error: authError.message }
     if (!authData.user) return { error: 'Registration failed' }
-
-    // Create profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: authData.user.id,
-        full_name: input.full_name,
-        email: input.email,
-        phone: input.phone || null,
-        role: input.role,
-      })
-
-    if (profileError) return { error: profileError.message }
-
-    // If player, create player_profiles record
-    if (input.role === 'player') {
-      await supabase
-        .from('player_profiles')
-        .insert({ player_id: authData.user.id })
-    }
 
     return { data: { userId: authData.user.id } }
   } catch {

@@ -69,3 +69,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area for bottom navigation on notched devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ensure viewport accounts for safe areas */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-24 {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+}

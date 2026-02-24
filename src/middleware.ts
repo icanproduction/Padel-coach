@@ -43,7 +43,8 @@ export async function middleware(request: NextRequest) {
   const isAdminPage = pathname.startsWith('/admin')
   const isCoachPage = pathname.startsWith('/coach')
   const isPlayerPage = pathname.startsWith('/player')
-  const isProtected = isAdminPage || isCoachPage || isPlayerPage
+  const isProfilePage = pathname.startsWith('/profile')
+  const isProtected = isAdminPage || isCoachPage || isPlayerPage || isProfilePage
 
   // Not logged in → redirect to login
   if (!user && (isProtected || isOnboardingPage)) {

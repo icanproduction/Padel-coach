@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { Sidebar } from './sidebar'
+import { BottomNav } from './bottom-nav'
 import { Header } from './header'
 import type { Profile, UserRole } from '@/types/database'
 
@@ -12,27 +11,15 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, user, role }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar
-        role={role}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <Header user={user} />
 
-      {/* Main content area */}
-      <div className="md:ml-64">
-        <Header
-          user={user}
-          onMenuClick={() => setSidebarOpen(true)}
-        />
+      <main className="px-4 py-4 pb-24 max-w-lg mx-auto">
+        {children}
+      </main>
 
-        <main className="p-4 md:p-6 max-w-7xl mx-auto">
-          {children}
-        </main>
-      </div>
+      <BottomNav role={role} />
     </div>
   )
 }
