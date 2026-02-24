@@ -7,6 +7,8 @@ import { getModuleById } from '@/data/curriculum'
 import { cn } from '@/lib/utils'
 import { ClipboardList, MessageSquare, Target, BookOpen } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PlayerAssessmentsPage() {
   const supabase = await createServerSupabaseClient()
 

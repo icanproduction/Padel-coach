@@ -5,6 +5,8 @@ import { SessionsClient } from './sessions-client'
 import { CalendarDays } from 'lucide-react'
 import type { Profile } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   searchParams: Promise<{ create?: string }>
 }

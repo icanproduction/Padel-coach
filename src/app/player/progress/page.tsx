@@ -10,6 +10,8 @@ import type { Assessment, ModuleRecord } from '@/types/database'
 import { cn } from '@/lib/utils'
 import { BarChart3, Target, TrendingUp, Hash } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PlayerProgressPage() {
   const supabase = await createServerSupabaseClient()
 

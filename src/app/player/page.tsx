@@ -9,6 +9,8 @@ import { ASSESSMENT_PARAMETERS } from '@/types/database'
 import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PlayerDashboard() {
   const supabase = await createServerSupabaseClient()
 

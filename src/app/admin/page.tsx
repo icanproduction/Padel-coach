@@ -3,6 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SessionCard } from '@/components/features/session-card'
 import { Users, UserCheck, CalendarDays, Play, Plus, Eye } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   const supabase = await createServerSupabaseClient()
 

@@ -13,6 +13,8 @@ const PARTICIPANT_STATUS_STYLES: Record<string, string> = {
   no_show: 'bg-gray-100 text-gray-600',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function PlayerSessionsPage() {
   const supabase = await createServerSupabaseClient()
 

@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { UserCheck, Mail, Phone } from 'lucide-react'
 import type { Profile } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminCoachesPage() {
   const supabase = await createServerSupabaseClient()
 

@@ -2,6 +2,8 @@ import { getAllPlayers } from '@/app/actions/player-actions'
 import { PlayerCard } from '@/components/features/player-card'
 import { Users } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CoachPlayersPage() {
   const { data: players, error } = await getAllPlayers()
 

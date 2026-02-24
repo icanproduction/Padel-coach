@@ -6,6 +6,8 @@ import { CalendarDays } from 'lucide-react'
 import { SessionStatusActions } from './session-status-actions'
 import { CoachCreateSessionForm } from './create-session-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CoachSessionsPage() {
   const supabase = await createServerSupabaseClient()
 

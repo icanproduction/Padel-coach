@@ -8,6 +8,8 @@ import { ArrowLeft, ClipboardList, User } from 'lucide-react'
 import { SessionStatusActions } from '../session-status-actions'
 import { ParticipantActions } from './participant-actions'
 
+export const dynamic = 'force-dynamic'
+
 interface SessionDetailPageProps {
   params: Promise<{ id: string }>
 }

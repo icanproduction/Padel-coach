@@ -1,6 +1,8 @@
 import { getAllModules, getCurriculumByModuleId } from '@/data/curriculum'
 import { CoachModeForm } from './coach-mode-form'
 
+export const dynamic = 'force-dynamic'
+
 interface CoachModePageProps {
   searchParams: Promise<{ module?: string; player?: string; session?: string }>
 }

@@ -6,6 +6,8 @@ import { GradeBadge } from '@/components/features/grade-badge'
 import { ArchetypeBadge } from '@/components/features/archetype-badge'
 import { ClipboardList, CalendarDays, Plus, ChevronRight, Users } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function CoachDashboard() {
   const supabase = await createServerSupabaseClient()
 

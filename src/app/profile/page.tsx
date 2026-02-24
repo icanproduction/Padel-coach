@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from './profile-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProfilePage() {
   const supabase = await createServerSupabaseClient()
 

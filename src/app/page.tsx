@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { TrendingUp, ClipboardCheck, Users, BarChart3 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#1a1f36]">

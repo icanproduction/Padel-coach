@@ -3,6 +3,8 @@ import { PlayerCard } from '@/components/features/player-card'
 import { Users } from 'lucide-react'
 import type { PlayerWithProfile } from '@/types/database'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPlayersPage() {
   const supabase = await createServerSupabaseClient()
 

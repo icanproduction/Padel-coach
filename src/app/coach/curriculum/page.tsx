@@ -2,6 +2,8 @@ import { CURRICULUMS } from '@/data/curriculum'
 import { CurriculumAccordion } from './curriculum-accordion'
 import { BookOpen } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function CurriculumPage() {
   // Transform data for the client component
   const curriculumData = CURRICULUMS.map((c) => ({

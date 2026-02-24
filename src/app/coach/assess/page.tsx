@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AssessmentForm } from './assessment-form'
 
+export const dynamic = 'force-dynamic'
+
 interface AssessPageProps {
   searchParams: Promise<{ player?: string; session?: string }>
 }
