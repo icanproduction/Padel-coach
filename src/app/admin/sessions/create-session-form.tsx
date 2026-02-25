@@ -106,7 +106,7 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-card rounded-t-2xl sm:rounded-2xl border border-border shadow-lg w-full sm:max-w-md max-h-[92vh] overflow-y-auto">
+      <div className="bg-card rounded-t-2xl sm:rounded-2xl border border-border shadow-lg w-full sm:max-w-md max-h-[92vh] flex flex-col">
         {/* Handle bar (mobile) */}
         <div className="flex justify-center pt-3 sm:hidden">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -124,7 +124,8 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-4 pb-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-5">
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
               {error}
@@ -247,16 +248,19 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
               className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
             />
           </div>
+          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full py-3.5 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isPending ? 'Creating Session...' : 'Create Session'}
-          </button>
+          {/* Sticky Submit Button */}
+          <div className="sticky bottom-0 px-4 py-4 border-t border-border bg-card safe-area-bottom">
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full py-3.5 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isPending ? 'Creating Session...' : 'Create Session'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
