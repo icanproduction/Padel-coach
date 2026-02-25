@@ -73,6 +73,7 @@ export default async function CoachSessionsPage() {
                     date={session.date}
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
+                    location={session.location}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}
@@ -115,6 +116,7 @@ export default async function CoachSessionsPage() {
                     date={session.date}
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
+                    location={session.location}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}

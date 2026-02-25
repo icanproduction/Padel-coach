@@ -28,6 +28,7 @@ export async function createSession(input: CreateSessionInput) {
         coach_id: input.coach_id,
         session_type: input.session_type,
         max_players: input.max_players,
+        location: input.location || null,
         notes: input.notes || null,
       })
       .select()

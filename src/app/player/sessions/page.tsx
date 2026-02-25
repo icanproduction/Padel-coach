@@ -98,6 +98,7 @@ export default async function PlayerSessionsPage() {
                   date={session.date}
                   coachName={coach?.full_name || 'TBA'}
                   sessionType={session.session_type}
+                  location={session.location}
                   status={session.status}
                   maxPlayers={session.max_players}
                   playerCount={activePlayerCount}
@@ -133,6 +134,7 @@ export default async function PlayerSessionsPage() {
                 session_type: string
                 status: string
                 max_players: number
+                location: string | null
                 notes: string | null
                 coach: { id: string; full_name: string } | null
               } | null
@@ -146,6 +148,7 @@ export default async function PlayerSessionsPage() {
                   date={session.date}
                   coachName={session.coach?.full_name || 'TBA'}
                   sessionType={session.session_type}
+                  location={session.location}
                   status={session.status}
                   maxPlayers={session.max_players}
                   notes={session.notes}
@@ -189,6 +192,7 @@ export default async function PlayerSessionsPage() {
                 session_type: string
                 status: string
                 max_players: number
+                location: string | null
                 notes: string | null
                 coach: { id: string; full_name: string } | null
               } | null
@@ -202,6 +206,7 @@ export default async function PlayerSessionsPage() {
                   date={session.date}
                   coachName={session.coach?.full_name || 'TBA'}
                   sessionType={session.session_type}
+                  location={session.location}
                   status={session.status}
                   maxPlayers={session.max_players}
                   notes={session.notes}

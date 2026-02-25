@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { Calendar, Clock, Users, User } from 'lucide-react'
+import { Calendar, Clock, Users, User, MapPin } from 'lucide-react'
 
 const STATUS_STYLES: Record<string, string> = {
   scheduled: 'bg-blue-100 text-blue-800',
@@ -21,6 +21,7 @@ interface SessionCardProps {
   status: string
   maxPlayers: number
   playerCount?: number
+  location?: string | null
   notes?: string | null
   actions?: React.ReactNode
   className?: string
@@ -33,6 +34,7 @@ export function SessionCard({
   status,
   maxPlayers,
   playerCount = 0,
+  location,
   notes,
   actions,
   className,
@@ -66,6 +68,14 @@ export function SessionCard({
             <User className="w-3.5 h-3.5" />
             <span>Coach: {coachName}</span>
           </div>
+
+          {/* Location */}
+          {location && (
+            <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{location}</span>
+            </div>
+          )}
 
           {/* Players */}
           <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">

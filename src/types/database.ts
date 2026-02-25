@@ -100,6 +100,7 @@ export interface Session {
   session_type: SessionType
   status: SessionStatus
   max_players: number
+  location: string | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -178,6 +179,7 @@ export interface CreateSessionInput {
   coach_id: string
   session_type: SessionType
   max_players: number
+  location?: string
   notes?: string
 }
 
