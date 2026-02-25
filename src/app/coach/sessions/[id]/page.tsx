@@ -62,6 +62,7 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
         locationName={session.locations?.name}
         courtsBooked={session.courts_booked}
         durationHours={session.duration_hours}
+        reclubUrl={session.reclub_url}
         status={session.status}
         maxPlayers={session.max_players}
         playerCount={approvedPlayers.length + attendedPlayers.length}

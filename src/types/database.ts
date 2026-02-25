@@ -15,7 +15,7 @@ export type PrimaryGoal = 'learn_basics' | 'improve_technique' | 'competitive_pl
 
 export type PlayingFrequency = '1x_week' | '2x_week' | '3x_week' | 'more'
 
-export type SessionType = 'discovery' | 'coaching_drilling'
+export type SessionType = 'discovery' | 'coaching_drilling' | 'open_play'
 
 export type SessionStatus = 'scheduled' | 'in_progress' | 'completed'
 
@@ -113,8 +113,9 @@ export interface Session {
   max_players: number
   location: string | null
   location_id: string | null
-  courts_booked: number
+  courts_booked: number | null
   duration_hours: number
+  reclub_url: string | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -199,8 +200,9 @@ export interface CreateSessionInput {
   session_type: SessionType
   max_players: number
   location_id?: string
-  courts_booked?: number
+  courts_booked?: number | null
   duration_hours?: number
+  reclub_url?: string
   notes?: string
 }
 

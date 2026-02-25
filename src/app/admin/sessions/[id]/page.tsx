@@ -74,11 +74,13 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
   const typeStyles: Record<string, string> = {
     discovery: 'bg-purple-100 text-purple-800',
     coaching_drilling: 'bg-blue-100 text-blue-800',
+    open_play: 'bg-green-100 text-green-800',
   }
 
   const typeLabels: Record<string, string> = {
     discovery: 'Discovery',
     coaching_drilling: 'Coaching & Drilling',
+    open_play: 'Open Play',
   }
 
   const location = (session as any).locations
@@ -161,9 +163,26 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
             <div className="flex items-center gap-2 text-sm">
               <Users className="w-4 h-4 text-muted-foreground" />
               <span>
-                {approvedCount}/{session.max_players} players
+                {session.session_type === 'open_play'
+                  ? `${approvedCount} player${approvedCount !== 1 ? 's' : ''} joined`
+                  : `${approvedCount}/${session.max_players} players`}
               </span>
             </div>
+
+            {/* ReClub */}
+            {session.reclub_url && (
+              <div className="flex items-center gap-2 text-sm">
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                <a
+                  href={session.reclub_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary font-medium hover:underline"
+                >
+                  Book via ReClub
+                </a>
+              </div>
+            )}
 
             {/* Notes */}
             {session.notes && (

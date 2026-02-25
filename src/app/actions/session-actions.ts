@@ -29,8 +29,9 @@ export async function createSession(input: CreateSessionInput) {
         session_type: input.session_type,
         max_players: input.max_players,
         location_id: input.location_id || null,
-        courts_booked: input.courts_booked || 1,
+        courts_booked: input.session_type === 'open_play' ? null : (input.courts_booked || 1),
         duration_hours: input.duration_hours || 1.0,
+        reclub_url: input.reclub_url || null,
         notes: input.notes || null,
       })
       .select()

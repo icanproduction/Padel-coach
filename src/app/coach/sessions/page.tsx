@@ -89,6 +89,7 @@ export default async function CoachSessionsPage() {
                     locationName={session.locations?.name}
                     courtsBooked={session.courts_booked}
                     durationHours={session.duration_hours}
+                    reclubUrl={session.reclub_url}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}
@@ -134,6 +135,7 @@ export default async function CoachSessionsPage() {
                     locationName={session.locations?.name}
                     courtsBooked={session.courts_booked}
                     durationHours={session.duration_hours}
+                    reclubUrl={session.reclub_url}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}
