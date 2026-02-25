@@ -7,10 +7,9 @@ import {
   Calendar,
   Users,
   GraduationCap,
-  ClipboardCheck,
   TrendingUp,
-  ClipboardList,
   BookOpen,
+  MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
@@ -27,19 +26,19 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: 'Sessions', href: '/admin/sessions', icon: Calendar },
     { label: 'Players', href: '/admin/players', icon: Users },
     { label: 'Coaches', href: '/admin/coaches', icon: GraduationCap },
+    { label: 'Locations', href: '/admin/locations', icon: MapPin },
   ],
   coach: [
     { label: 'Home', href: '/coach', icon: LayoutDashboard },
     { label: 'Sessions', href: '/coach/sessions', icon: Calendar },
-    { label: 'Assess', href: '/coach/assess', icon: ClipboardCheck },
     { label: 'Players', href: '/coach/players', icon: Users },
     { label: 'Drills', href: '/coach/curriculum', icon: BookOpen },
   ],
   player: [
     { label: 'Home', href: '/player', icon: LayoutDashboard },
-    { label: 'Progress', href: '/player/progress', icon: TrendingUp },
     { label: 'Sessions', href: '/player/sessions', icon: Calendar },
-    { label: 'History', href: '/player/assessments', icon: ClipboardList },
+    { label: 'Progress', href: '/player/progress', icon: TrendingUp },
+    { label: 'Curriculum', href: '/player/assessments', icon: BookOpen },
   ],
 }
 

@@ -7,10 +7,10 @@ import {
   Calendar,
   Users,
   GraduationCap,
-  ClipboardCheck,
   TrendingUp,
   ClipboardList,
   BookOpen,
+  MapPin,
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -28,19 +28,19 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: 'Sessions', href: '/admin/sessions', icon: Calendar },
     { label: 'Players', href: '/admin/players', icon: Users },
     { label: 'Coaches', href: '/admin/coaches', icon: GraduationCap },
+    { label: 'Locations', href: '/admin/locations', icon: MapPin },
   ],
   coach: [
     { label: 'Dashboard', href: '/coach', icon: LayoutDashboard },
-    { label: 'My Sessions', href: '/coach/sessions', icon: Calendar },
+    { label: 'Sessions', href: '/coach/sessions', icon: Calendar },
     { label: 'Players', href: '/coach/players', icon: Users },
-    { label: 'Assess', href: '/coach/assess', icon: ClipboardCheck },
     { label: 'Curriculum', href: '/coach/curriculum', icon: BookOpen },
   ],
   player: [
     { label: 'Dashboard', href: '/player', icon: LayoutDashboard },
-    { label: 'My Progress', href: '/player/progress', icon: TrendingUp },
-    { label: 'Sessions', href: '/player/sessions', icon: Calendar },
-    { label: 'Assessments', href: '/player/assessments', icon: ClipboardList },
+    { label: 'My Sessions', href: '/player/sessions', icon: Calendar },
+    { label: 'Progress', href: '/player/progress', icon: TrendingUp },
+    { label: 'Curriculum', href: '/player/assessments', icon: BookOpen },
   ],
 }
 

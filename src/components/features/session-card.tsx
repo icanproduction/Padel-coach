@@ -9,8 +9,12 @@ const STATUS_STYLES: Record<string, string> = {
 
 const TYPE_STYLES: Record<string, string> = {
   discovery: 'bg-purple-100 text-purple-800',
-  regular: 'bg-gray-100 text-gray-800',
-  assessment_only: 'bg-orange-100 text-orange-800',
+  coaching_drilling: 'bg-blue-100 text-blue-800',
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  discovery: 'Discovery',
+  coaching_drilling: 'Coaching & Drilling',
 }
 
 interface SessionCardProps {
@@ -21,7 +25,9 @@ interface SessionCardProps {
   status: string
   maxPlayers: number
   playerCount?: number
-  location?: string | null
+  locationName?: string | null
+  courtsBooked?: number
+  durationHours?: number
   notes?: string | null
   actions?: React.ReactNode
   className?: string
@@ -34,7 +40,9 @@ export function SessionCard({
   status,
   maxPlayers,
   playerCount = 0,
-  location,
+  locationName,
+  courtsBooked,
+  durationHours,
   notes,
   actions,
   className,
@@ -46,6 +54,14 @@ export function SessionCard({
   const timeStr = sessionDate.toLocaleTimeString('en-GB', {
     hour: '2-digit', minute: '2-digit',
   })
+
+  const courtDurationInfo = []
+  if (courtsBooked && courtsBooked > 0) {
+    courtDurationInfo.push(`${courtsBooked} Court${courtsBooked > 1 ? 's' : ''}`)
+  }
+  if (durationHours && durationHours > 0) {
+    courtDurationInfo.push(`${durationHours} Hr${durationHours > 1 ? 's' : ''}`)
+  }
 
   return (
     <div className={cn('bg-card rounded-xl border border-border p-4', className)}>
@@ -69,11 +85,16 @@ export function SessionCard({
             <span>Coach: {coachName}</span>
           </div>
 
-          {/* Location */}
-          {location && (
+          {/* Location + Courts + Duration */}
+          {locationName && (
             <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{location}</span>
+              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>
+                {locationName}
+                {courtDurationInfo.length > 0 && (
+                  <span className="text-xs opacity-75"> — {courtDurationInfo.join(', ')}</span>
+                )}
+              </span>
             </div>
           )}
 
@@ -97,10 +118,10 @@ export function SessionCard({
             {status.replace('_', ' ')}
           </span>
           <span className={cn(
-            'text-xs px-2 py-0.5 rounded-full capitalize',
+            'text-xs px-2 py-0.5 rounded-full',
             TYPE_STYLES[sessionType] || 'bg-gray-100 text-gray-800'
           )}>
-            {sessionType.replace('_', ' ')}
+            {TYPE_LABELS[sessionType] || sessionType.replace('_', ' ')}
           </span>
         </div>
       </div>

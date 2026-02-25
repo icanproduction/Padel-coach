@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SessionCard } from '@/components/features/session-card'
 import { SessionsClient } from './sessions-client'
 import { CalendarDays } from 'lucide-react'
-import type { Profile } from '@/types/database'
+import type { Profile, Location } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,14 +15,15 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
   const params = await searchParams
   const supabase = await createServerSupabaseClient()
 
-  // Fetch sessions and coaches in parallel
-  const [sessionsResult, coachesResult] = await Promise.all([
+  // Fetch sessions, coaches, and locations in parallel
+  const [sessionsResult, coachesResult, locationsResult] = await Promise.all([
     supabase
       .from('sessions')
       .select(`
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
-        session_players(player_id, status)
+        session_players(player_id, status),
+        locations(id, name, address, google_maps_url, total_courts)
       `)
       .order('date', { ascending: false }),
     supabase
@@ -30,10 +31,16 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
       .select('*')
       .eq('role', 'coach')
       .order('full_name'),
+    supabase
+      .from('locations')
+      .select('*')
+      .eq('is_active', true)
+      .order('name'),
   ])
 
   const sessions = sessionsResult.data
   const coaches = (coachesResult.data as Profile[]) ?? []
+  const locations = (locationsResult.data as Location[]) ?? []
   const defaultOpen = params?.create === 'true'
 
   return (
@@ -46,7 +53,7 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
             Manage coaching sessions
           </p>
         </div>
-        <SessionsClient coaches={coaches} defaultOpen={defaultOpen} />
+        <SessionsClient coaches={coaches} locations={locations} defaultOpen={defaultOpen} />
       </div>
 
       {/* Sessions list */}
@@ -65,7 +72,9 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
                 date={session.date}
                 coachName={session.coach?.full_name ?? 'Unknown'}
                 sessionType={session.session_type}
-                location={session.location}
+                locationName={session.locations?.name}
+                courtsBooked={session.courts_booked}
+                durationHours={session.duration_hours}
                 status={session.status}
                 maxPlayers={session.max_players}
                 playerCount={

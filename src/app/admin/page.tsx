@@ -36,7 +36,8 @@ export default async function AdminDashboard() {
       .select(`
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
-        session_players(player_id, status)
+        session_players(player_id, status),
+        locations(id, name)
       `)
       .order('date', { ascending: false })
       .limit(5),
@@ -176,7 +177,9 @@ export default async function AdminDashboard() {
                   date={session.date}
                   coachName={session.coach?.full_name ?? 'Unknown'}
                   sessionType={session.session_type}
-                  location={session.location}
+                  locationName={session.locations?.name}
+                  courtsBooked={session.courts_booked}
+                  durationHours={session.duration_hours}
                   status={session.status}
                   maxPlayers={session.max_players}
                   playerCount={

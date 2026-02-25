@@ -35,7 +35,8 @@ export default async function CoachDashboard() {
     .select(`
       *,
       coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
-      session_players(player_id, status)
+      session_players(player_id, status),
+      locations(id, name)
     `)
     .eq('coach_id', user.id)
     .gte('date', today)
@@ -73,11 +74,11 @@ export default async function CoachDashboard() {
           </p>
         </div>
         <Link
-          href="/coach/assess"
+          href="/coach/sessions"
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium text-sm min-h-[44px] hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
-          New Assessment
+          New Session
         </Link>
       </div>
 
@@ -139,7 +140,9 @@ export default async function CoachDashboard() {
                   date={session.date}
                   coachName={session.coach?.full_name ?? 'Unknown'}
                   sessionType={session.session_type}
-                  location={session.location}
+                  locationName={session.locations?.name}
+                  courtsBooked={session.courts_booked}
+                  durationHours={session.duration_hours}
                   status={session.status}
                   maxPlayers={session.max_players}
                   playerCount={session.session_players?.filter(

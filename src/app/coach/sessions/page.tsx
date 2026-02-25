@@ -5,6 +5,7 @@ import { SessionCard } from '@/components/features/session-card'
 import { CalendarDays } from 'lucide-react'
 import { SessionStatusActions } from './session-status-actions'
 import { CoachCreateSessionForm } from './create-session-form'
+import type { Location } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,16 +17,28 @@ export default async function CoachSessionsPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch all sessions for this coach
-  const { data: sessions, error } = await supabase
-    .from('sessions')
-    .select(`
-      *,
-      coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
-      session_players(player_id, status)
-    `)
-    .eq('coach_id', user.id)
-    .order('date', { ascending: false })
+  // Fetch sessions and locations in parallel
+  const [sessionsResult, locationsResult] = await Promise.all([
+    supabase
+      .from('sessions')
+      .select(`
+        *,
+        coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
+        session_players(player_id, status),
+        locations(id, name, address, google_maps_url, total_courts)
+      `)
+      .eq('coach_id', user.id)
+      .order('date', { ascending: false }),
+    supabase
+      .from('locations')
+      .select('*')
+      .eq('is_active', true)
+      .order('name'),
+  ])
+
+  const sessions = sessionsResult.data
+  const error = sessionsResult.error
+  const locations = (locationsResult.data as Location[]) ?? []
 
   const allSessions = sessions ?? []
   const upcomingSessions = allSessions.filter(
@@ -43,7 +56,7 @@ export default async function CoachSessionsPage() {
             Manage your coaching sessions
           </p>
         </div>
-        <CoachCreateSessionForm coachId={user.id} />
+        <CoachCreateSessionForm coachId={user.id} locations={locations} />
       </div>
 
       {/* Error State */}
@@ -73,7 +86,9 @@ export default async function CoachSessionsPage() {
                     date={session.date}
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
-                    location={session.location}
+                    locationName={session.locations?.name}
+                    courtsBooked={session.courts_booked}
+                    durationHours={session.duration_hours}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}
@@ -116,7 +131,9 @@ export default async function CoachSessionsPage() {
                     date={session.date}
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
-                    location={session.location}
+                    locationName={session.locations?.name}
+                    courtsBooked={session.courts_booked}
+                    durationHours={session.duration_hours}
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={playerCount}

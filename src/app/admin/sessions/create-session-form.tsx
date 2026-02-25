@@ -3,11 +3,12 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSession } from '@/app/actions/session-actions'
-import type { Profile, SessionType } from '@/types/database'
-import { X, Loader2, Sparkles, Target, ClipboardCheck, MapPin } from 'lucide-react'
+import type { Profile, Location, SessionType } from '@/types/database'
+import { X, Loader2, Sparkles, Dumbbell, MapPin, ExternalLink } from 'lucide-react'
 
 interface CreateSessionFormProps {
   coaches: Profile[]
+  locations: Location[]
   onClose: () => void
 }
 
@@ -26,24 +27,18 @@ const SESSION_TYPES: {
     color: 'border-purple-300 bg-purple-50 text-purple-700 ring-purple-500',
   },
   {
-    value: 'regular',
-    label: 'Regular',
-    description: 'Standard coaching session',
-    icon: Target,
+    value: 'coaching_drilling',
+    label: 'Coaching & Drilling',
+    description: 'Modules, drills & scoring',
+    icon: Dumbbell,
     color: 'border-blue-300 bg-blue-50 text-blue-700 ring-blue-500',
-  },
-  {
-    value: 'assessment_only',
-    label: 'Assessment',
-    description: 'Skills evaluation only',
-    icon: ClipboardCheck,
-    color: 'border-orange-300 bg-orange-50 text-orange-700 ring-orange-500',
   },
 ]
 
 const PLAYER_OPTIONS = [1, 2, 3, 4]
+const DURATION_OPTIONS = [1, 1.5, 2, 2.5, 3]
 
-export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) {
+export function CreateSessionForm({ coaches, locations, onClose }: CreateSessionFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -51,11 +46,16 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
   const [formData, setFormData] = useState({
     coach_id: coaches[0]?.id ?? '',
     date: '',
-    session_type: 'regular' as SessionType,
+    session_type: 'coaching_drilling' as SessionType,
     max_players: 4,
-    location: '',
+    location_id: '',
+    courts_booked: 1,
+    duration_hours: 1,
     notes: '',
   })
+
+  const selectedLocation = locations.find(l => l.id === formData.location_id)
+  const maxCourts = selectedLocation?.total_courts ?? 10
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -86,7 +86,9 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
         date: new Date(formData.date).toISOString(),
         session_type: formData.session_type,
         max_players: formData.max_players,
-        location: formData.location || undefined,
+        location_id: formData.location_id || undefined,
+        courts_booked: formData.courts_booked,
+        duration_hours: formData.duration_hours,
         notes: formData.notes || undefined,
       })
 
@@ -132,28 +134,10 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
             </div>
           )}
 
-          {/* Coach */}
-          <div>
-            <label className="text-sm font-medium block mb-2">Coach</label>
-            <select
-              name="coach_id"
-              value={formData.coach_id}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {coaches.length === 0 && <option value="">No coaches available</option>}
-              {coaches.map((coach) => (
-                <option key={coach.id} value={coach.id}>
-                  {coach.full_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Session Type — Card Selector */}
           <div>
             <label className="text-sm font-medium block mb-2">Session Type</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {SESSION_TYPES.map((type) => {
                 const Icon = type.icon
                 const isSelected = formData.session_type === type.value
@@ -181,6 +165,24 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
             </div>
           </div>
 
+          {/* Coach */}
+          <div>
+            <label className="text-sm font-medium block mb-2">Coach</label>
+            <select
+              name="coach_id"
+              value={formData.coach_id}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              {coaches.length === 0 && <option value="">No coaches available</option>}
+              {coaches.map((coach) => (
+                <option key={coach.id} value={coach.id}>
+                  {coach.full_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Date & Time */}
           <div>
             <label className="text-sm font-medium block mb-2">Date & Time</label>
@@ -194,19 +196,93 @@ export function CreateSessionForm({ coaches, onClose }: CreateSessionFormProps) 
             />
           </div>
 
-          {/* Location */}
+          {/* Location — Dropdown */}
           <div>
             <label className="text-sm font-medium block mb-2">Location</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="e.g. Court 1, Padel Arena Jakarta"
-                className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+              <select
+                name="location_id"
+                value={formData.location_id}
+                onChange={(e) => {
+                  const locId = e.target.value
+                  setFormData((prev) => ({
+                    ...prev,
+                    location_id: locId,
+                    courts_booked: 1,
+                  }))
+                }}
+                className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+              >
+                <option value="">Select location...</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name} ({loc.total_courts} courts)
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedLocation && (
+              <div className="mt-2 px-3 py-2 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+                <p>{selectedLocation.address}</p>
+                {selectedLocation.notes && (
+                  <p className="mt-1 opacity-75">{selectedLocation.notes}</p>
+                )}
+                <a
+                  href={selectedLocation.google_maps_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 mt-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Open in Maps
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Courts Booked & Duration — Side by Side */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Courts Booked */}
+            <div>
+              <label className="text-sm font-medium block mb-2">Courts</label>
+              <div className="flex gap-1.5">
+                {Array.from({ length: Math.min(maxCourts, 4) }, (_, i) => i + 1).map((num) => {
+                  const isSelected = formData.courts_booked === num
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, courts_booked: num }))}
+                      className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary'
+                          : 'border-border bg-background text-muted-foreground hover:border-muted-foreground/40'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div>
+              <label className="text-sm font-medium block mb-2">Duration (hrs)</label>
+              <select
+                value={formData.duration_hours}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, duration_hours: parseFloat(e.target.value) }))
+                }
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                {DURATION_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d} {d === 1 ? 'hour' : 'hours'}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

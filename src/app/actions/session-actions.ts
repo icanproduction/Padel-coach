@@ -28,7 +28,9 @@ export async function createSession(input: CreateSessionInput) {
         coach_id: input.coach_id,
         session_type: input.session_type,
         max_players: input.max_players,
-        location: input.location || null,
+        location_id: input.location_id || null,
+        courts_booked: input.courts_booked || 1,
+        duration_hours: input.duration_hours || 1.0,
         notes: input.notes || null,
       })
       .select()
@@ -80,7 +82,8 @@ export async function getAllSessions(filters?: { status?: SessionStatus; coach_i
       .select(`
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
-        session_players(player_id, status)
+        session_players(player_id, status),
+        locations(id, name, address, google_maps_url, total_courts)
       `)
       .order('date', { ascending: false })
 
@@ -116,7 +119,8 @@ export async function getSessionById(sessionId: string) {
           status,
           joined_at,
           profiles:profiles!session_players_player_id_fkey(id, full_name, email, avatar_url)
-        )
+        ),
+        locations(id, name, address, google_maps_url, total_courts)
       `)
       .eq('id', sessionId)
       .single()

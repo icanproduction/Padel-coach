@@ -9,7 +9,8 @@ import {
   Users,
   ArrowLeft,
   FileText,
-  Tag,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -32,7 +33,8 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
         status,
         joined_at,
         profiles:profiles!session_players_player_id_fkey(id, full_name, email, avatar_url)
-      )
+      ),
+      locations(id, name, address, google_maps_url, total_courts)
     `)
     .eq('id', id)
     .single()
@@ -71,9 +73,15 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
 
   const typeStyles: Record<string, string> = {
     discovery: 'bg-purple-100 text-purple-800',
-    regular: 'bg-gray-100 text-gray-800',
-    assessment_only: 'bg-orange-100 text-orange-800',
+    coaching_drilling: 'bg-blue-100 text-blue-800',
   }
+
+  const typeLabels: Record<string, string> = {
+    discovery: 'Discovery',
+    coaching_drilling: 'Coaching & Drilling',
+  }
+
+  const location = (session as any).locations
 
   return (
     <div className="space-y-6">
@@ -99,11 +107,11 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
                 {session.status.replace('_', ' ')}
               </span>
               <span
-                className={`text-xs px-2.5 py-1 rounded-full capitalize ${
+                className={`text-xs px-2.5 py-1 rounded-full ${
                   typeStyles[session.session_type] ?? 'bg-gray-100 text-gray-800'
                 }`}
               >
-                {session.session_type.replace('_', ' ')}
+                {typeLabels[session.session_type] ?? session.session_type.replace('_', ' ')}
               </span>
             </div>
 
@@ -126,6 +134,28 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
                 Coach: <span className="font-medium">{(session.coach as any)?.full_name ?? 'Unknown'}</span>
               </span>
             </div>
+
+            {/* Location */}
+            {location && (
+              <div className="flex items-center gap-2 text-sm">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <span className="font-medium">{location.name}</span>
+                {session.courts_booked && (
+                  <span className="text-muted-foreground">
+                    — {session.courts_booked} Court{session.courts_booked > 1 ? 's' : ''}, {session.duration_hours} Hr{session.duration_hours > 1 ? 's' : ''}
+                  </span>
+                )}
+                <a
+                  href={location.google_maps_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline ml-1"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Maps
+                </a>
+              </div>
+            )}
 
             {/* Players */}
             <div className="flex items-center gap-2 text-sm">

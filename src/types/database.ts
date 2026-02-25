@@ -15,7 +15,7 @@ export type PrimaryGoal = 'learn_basics' | 'improve_technique' | 'competitive_pl
 
 export type PlayingFrequency = '1x_week' | '2x_week' | '3x_week' | 'more'
 
-export type SessionType = 'discovery' | 'regular' | 'assessment_only'
+export type SessionType = 'discovery' | 'coaching_drilling'
 
 export type SessionStatus = 'scheduled' | 'in_progress' | 'completed'
 
@@ -92,6 +92,17 @@ export interface PlayerProfile {
   updated_at: string
 }
 
+export interface Location {
+  id: string
+  name: string
+  address: string
+  google_maps_url: string
+  total_courts: number
+  notes: string | null
+  is_active: boolean
+  created_at: string
+}
+
 export interface Session {
   id: string
   date: string
@@ -101,9 +112,16 @@ export interface Session {
   status: SessionStatus
   max_players: number
   location: string | null
+  location_id: string | null
+  courts_booked: number
+  duration_hours: number
   notes: string | null
   created_at: string
   updated_at: string
+}
+
+export interface SessionWithLocation extends Session {
+  locations: Location | null
 }
 
 export interface SessionPlayer {
@@ -129,6 +147,7 @@ export interface Assessment {
   improvement_notes: string | null
   areas_to_focus: string[] | null
   recommended_next_modules: string[] | null
+  is_active: boolean
   created_at: string
 }
 
@@ -179,8 +198,22 @@ export interface CreateSessionInput {
   coach_id: string
   session_type: SessionType
   max_players: number
-  location?: string
+  location_id?: string
+  courts_booked?: number
+  duration_hours?: number
   notes?: string
+}
+
+export interface CreateLocationInput {
+  name: string
+  address: string
+  google_maps_url: string
+  total_courts: number
+  notes?: string
+}
+
+export interface UpdateLocationInput extends Partial<CreateLocationInput> {
+  is_active?: boolean
 }
 
 export interface AssessmentScoresInput {

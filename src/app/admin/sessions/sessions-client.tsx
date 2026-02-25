@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { CreateSessionForm } from './create-session-form'
-import type { Profile } from '@/types/database'
+import type { Profile, Location } from '@/types/database'
 import { Plus } from 'lucide-react'
 
 interface SessionsClientProps {
   coaches: Profile[]
+  locations: Location[]
   defaultOpen?: boolean
 }
 
-export function SessionsClient({ coaches, defaultOpen = false }: SessionsClientProps) {
+export function SessionsClient({ coaches, locations, defaultOpen = false }: SessionsClientProps) {
   const [showForm, setShowForm] = useState(defaultOpen)
 
   return (
@@ -26,6 +27,7 @@ export function SessionsClient({ coaches, defaultOpen = false }: SessionsClientP
       {showForm && (
         <CreateSessionForm
           coaches={coaches}
+          locations={locations}
           onClose={() => setShowForm(false)}
         />
       )}
