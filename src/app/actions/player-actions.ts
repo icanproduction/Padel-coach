@@ -1,8 +1,70 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { OnboardingInput } from '@/types/database'
+
+const EMAIL_DOMAIN = 'padel.local'
+
+export async function createPlayer(input: {
+  full_name: string
+  username: string
+  phone?: string
+}): Promise<{ data?: { userId: string }; error?: string }> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    // Check role: only coach or admin can create players
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'coach')) {
+      return { error: 'Unauthorized' }
+    }
+
+    const username = input.username.toLowerCase().trim()
+
+    if (!username || username.includes('@') || username.includes(' ')) {
+      return { error: 'Username tidak valid' }
+    }
+
+    // Check username uniqueness
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .single()
+
+    if (existing) return { error: 'Username sudah dipakai' }
+
+    // Create user via service role client (bypasses email confirmation)
+    const adminClient = createServiceRoleClient()
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+      email: `${username}@${EMAIL_DOMAIN}`,
+      password: '123456',
+      email_confirm: true,
+      user_metadata: {
+        full_name: input.full_name,
+        role: 'player',
+        username,
+        phone: input.phone || null,
+      },
+    })
+
+    if (authError) return { error: authError.message }
+    if (!authData.user) return { error: 'Failed to create player' }
+
+    revalidatePath('/coach/players')
+    return { data: { userId: authData.user.id } }
+  } catch {
+    return { error: 'Failed to create player' }
+  }
+}
 
 export async function getAllPlayers() {
   try {

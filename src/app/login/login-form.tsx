@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
+const EMAIL_DOMAIN = 'padel.local'
+
 export function LoginForm() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -18,6 +20,8 @@ export function LoginForm() {
     setError(null)
 
     try {
+      const email = `${username.toLowerCase()}@${EMAIL_DOMAIN}`
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -57,17 +61,19 @@ export function LoginForm() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-            Email
+          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1.5">
+            Username
           </label>
           <input
-            id="email"
-            type="email"
+            id="username"
+            type="text"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="coach@padelcoach.pro"
+            placeholder="username"
+            autoCapitalize="none"
+            autoCorrect="off"
           />
         </div>
         <div>
@@ -81,7 +87,7 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="password123"
+            placeholder="password"
           />
         </div>
       </div>
@@ -96,9 +102,9 @@ export function LoginForm() {
 
       <div className="text-center text-xs text-muted-foreground space-y-1">
         <p className="font-medium">Test accounts:</p>
-        <p>admin@padelcoach.pro / password123</p>
-        <p>coach@padelcoach.pro / password123</p>
-        <p>player@padelcoach.pro / password123</p>
+        <p>admin / password123</p>
+        <p>coach / password123</p>
+        <p>player / password123</p>
       </div>
     </form>
   )

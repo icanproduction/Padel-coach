@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { completeOnboarding } from '@/app/actions/player-actions'
-import type { ExperienceLevel, PrimaryGoal, PlayingFrequency } from '@/types/database'
+import type { ExperienceLevel, PlayingFrequency } from '@/types/database'
 
 const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string }[] = [
   { value: 'never_played', label: 'Never Played' },
@@ -12,7 +12,7 @@ const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string }[] = [
   { value: 'play_regularly', label: 'Play Regularly' },
 ]
 
-const GOAL_OPTIONS: { value: PrimaryGoal; label: string }[] = [
+const GOAL_OPTIONS: { value: string; label: string }[] = [
   { value: 'learn_basics', label: 'Learn Basics' },
   { value: 'improve_technique', label: 'Improve Technique' },
   { value: 'competitive_play', label: 'Competitive Play' },
@@ -27,13 +27,13 @@ const FREQUENCY_OPTIONS: { value: PlayingFrequency; label: string }[] = [
   { value: 'more', label: 'More than 3x' },
 ]
 
-const RACKET_SPORTS = ['None', 'Tennis', 'Badminton', 'Squash', 'Table Tennis', 'Other']
+const RACKET_SPORTS = ['Tennis', 'Badminton', 'Squash', 'Table Tennis', 'Other']
 
 export function OnboardingForm() {
   const [step, setStep] = useState(1)
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | ''>('')
-  const [racketSport, setRacketSport] = useState('')
-  const [primaryGoal, setPrimaryGoal] = useState<PrimaryGoal | ''>('')
+  const [racketSports, setRacketSports] = useState<string[]>([])
+  const [primaryGoals, setPrimaryGoals] = useState<string[]>([])
   const [fears, setFears] = useState('')
   const [frequency, setFrequency] = useState<PlayingFrequency | ''>('')
   const [loading, setLoading] = useState(false)
@@ -45,22 +45,34 @@ export function OnboardingForm() {
   const canProceed = () => {
     switch (step) {
       case 1: return experienceLevel !== ''
-      case 2: return primaryGoal !== ''
+      case 2: return primaryGoals.length > 0
       case 3: return frequency !== ''
       case 4: return true
       default: return false
     }
   }
 
+  const toggleRacketSport = (sport: string) => {
+    setRacketSports((prev) =>
+      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+    )
+  }
+
+  const toggleGoal = (goal: string) => {
+    setPrimaryGoals((prev) =>
+      prev.includes(goal) ? prev.filter((g) => g !== goal) : [...prev, goal]
+    )
+  }
+
   const handleSubmit = async () => {
-    if (!experienceLevel || !primaryGoal || !frequency) return
+    if (!experienceLevel || primaryGoals.length === 0 || !frequency) return
     setLoading(true)
     setError(null)
 
     const result = await completeOnboarding({
       experience_level: experienceLevel,
-      previous_racket_sport: racketSport || undefined,
-      primary_goal: primaryGoal,
+      previous_racket_sport: racketSports.length > 0 ? racketSports.join(',') : undefined,
+      primary_goal: primaryGoals.join(','),
       fears_concerns: fears || undefined,
       playing_frequency_goal: frequency,
     })
@@ -95,7 +107,7 @@ export function OnboardingForm() {
         ))}
       </div>
 
-      {/* Step 1: Experience */}
+      {/* Step 1: Experience + Racket Sports */}
       {step === 1 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Your Padel Experience</h2>
@@ -118,15 +130,17 @@ export function OnboardingForm() {
           </div>
 
           <div className="pt-2">
-            <label className="block text-sm font-medium mb-1.5">Previous racket sport?</label>
+            <label className="block text-sm font-medium mb-1.5">
+              Previous racket sport? <span className="text-muted-foreground font-normal">(pilih semua yang sesuai)</span>
+            </label>
             <div className="flex flex-wrap gap-2">
               {RACKET_SPORTS.map((sport) => (
                 <button
                   key={sport}
                   type="button"
-                  onClick={() => setRacketSport(sport === 'None' ? '' : sport)}
+                  onClick={() => toggleRacketSport(sport)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                    (sport === 'None' && !racketSport) || racketSport === sport
+                    racketSports.includes(sport)
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border hover:border-muted-foreground'
                   }`}
@@ -135,23 +149,26 @@ export function OnboardingForm() {
                 </button>
               ))}
             </div>
+            {racketSports.length === 0 && (
+              <p className="text-xs text-muted-foreground mt-1.5">Tidak ada? Lanjut saja!</p>
+            )}
           </div>
         </div>
       )}
 
-      {/* Step 2: Goals */}
+      {/* Step 2: Goals (multi-select) */}
       {step === 2 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Your Primary Goal</h2>
-          <p className="text-sm text-muted-foreground">What do you want to achieve?</p>
+          <h2 className="text-lg font-semibold">Your Goals</h2>
+          <p className="text-sm text-muted-foreground">What do you want to achieve? (pilih semua yang sesuai)</p>
           <div className="grid grid-cols-1 gap-2">
             {GOAL_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setPrimaryGoal(opt.value)}
+                onClick={() => toggleGoal(opt.value)}
                 className={`p-4 rounded-lg border-2 text-left text-sm font-medium transition-colors min-h-[44px] ${
-                  primaryGoal === opt.value
+                  primaryGoals.includes(opt.value)
                     ? 'border-primary bg-primary/5 text-primary'
                     : 'border-border hover:border-muted-foreground'
                 }`}

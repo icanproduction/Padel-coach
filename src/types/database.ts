@@ -66,6 +66,7 @@ export const SCORING_GUIDE = [
 
 export interface Profile {
   id: string
+  username: string
   full_name: string
   email: string
   phone: string | null
@@ -81,7 +82,7 @@ export interface PlayerProfile {
   player_id: string
   experience_level: ExperienceLevel | null
   previous_racket_sport: string | null
-  primary_goal: PrimaryGoal | null
+  primary_goal: string | null
   fears_concerns: string | null
   playing_frequency_goal: PlayingFrequency | null
   current_grade: string
@@ -236,7 +237,7 @@ export interface CreateAssessmentInput extends AssessmentScoresInput {
 export interface OnboardingInput {
   experience_level: ExperienceLevel
   previous_racket_sport?: string
-  primary_goal: PrimaryGoal
+  primary_goal: string
   fears_concerns?: string
   playing_frequency_goal: PlayingFrequency
 }

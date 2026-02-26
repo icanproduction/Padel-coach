@@ -1,5 +1,6 @@
 import { getAllPlayers } from '@/app/actions/player-actions'
 import { PlayerCard } from '@/components/features/player-card'
+import { PlayersClient } from './players-client'
 import { Users } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -10,11 +11,14 @@ export default async function CoachPlayersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Players</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          View and assess all registered players
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Players</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            View and assess all registered players
+          </p>
+        </div>
+        <PlayersClient />
       </div>
 
       {/* Player Count */}

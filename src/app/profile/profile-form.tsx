@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateProfile } from '@/app/actions/profile-actions'
+import { updateProfile, updateUsername } from '@/app/actions/profile-actions'
 import { logout } from '@/app/actions/auth-actions'
 import { GradeBadge } from '@/components/features/grade-badge'
 import { ArchetypeBadge } from '@/components/features/archetype-badge'
@@ -12,7 +12,7 @@ import {
   Check,
   Loader2,
   LogOut,
-  Mail,
+  AtSign,
   Phone,
   Calendar,
   User,
@@ -32,6 +32,7 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   const [fullName, setFullName] = useState(profile.full_name)
+  const [username, setUsername] = useState(profile.username || '')
   const [phone, setPhone] = useState(profile.phone || '')
   const [dateOfBirth, setDateOfBirth] = useState(profile.date_of_birth || '')
 
@@ -42,10 +43,14 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
     .toUpperCase()
     .slice(0, 2)
 
-  const hasChanges =
+  const hasProfileChanges =
     fullName !== profile.full_name ||
     (phone || '') !== (profile.phone || '') ||
     (dateOfBirth || '') !== (profile.date_of_birth || '')
+
+  const hasUsernameChange = username !== (profile.username || '')
+
+  const hasChanges = hasProfileChanges || hasUsernameChange
 
   function handleSave() {
     setError(null)
@@ -56,19 +61,42 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
       return
     }
 
-    startTransition(async () => {
-      const result = await updateProfile({
-        full_name: fullName.trim(),
-        phone: phone || null,
-        date_of_birth: dateOfBirth || null,
-      })
+    if (!username.trim()) {
+      setError('Username is required')
+      return
+    }
 
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
+    if (username.includes('@') || username.includes(' ')) {
+      setError('Username tidak boleh mengandung @ atau spasi')
+      return
+    }
+
+    startTransition(async () => {
+      // Update username first if changed
+      if (hasUsernameChange) {
+        const usernameResult = await updateUsername(username.toLowerCase().trim())
+        if (usernameResult.error) {
+          setError(usernameResult.error)
+          return
+        }
       }
+
+      // Update other profile fields
+      if (hasProfileChanges) {
+        const result = await updateProfile({
+          full_name: fullName.trim(),
+          phone: phone || null,
+          date_of_birth: dateOfBirth || null,
+        })
+
+        if (result.error) {
+          setError(result.error)
+          return
+        }
+      }
+
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
     })
   }
 
@@ -128,6 +156,23 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
 
       {/* Edit Form */}
       <div className="space-y-4">
+        {/* Username */}
+        <div className="bg-card rounded-xl border border-border p-4">
+          <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 mb-2">
+            <AtSign className="w-3.5 h-3.5" />
+            Username
+          </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+            placeholder="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+          />
+        </div>
+
         {/* Full Name */}
         <div className="bg-card rounded-xl border border-border p-4">
           <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 mb-2">
@@ -140,20 +185,6 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
             onChange={(e) => setFullName(e.target.value)}
             className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder="Your full name"
-          />
-        </div>
-
-        {/* Email (read-only) */}
-        <div className="bg-card rounded-xl border border-border p-4">
-          <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 mb-2">
-            <Mail className="w-3.5 h-3.5" />
-            Email
-          </label>
-          <input
-            type="email"
-            value={profile.email}
-            disabled
-            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2.5 text-sm min-h-[44px] text-muted-foreground cursor-not-allowed"
           />
         </div>
 
@@ -205,7 +236,9 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
             <div>
               <p className="text-xs text-muted-foreground">Goal</p>
               <p className="font-semibold capitalize">
-                {playerProfile.primary_goal?.replace(/_/g, ' ') || '-'}
+                {playerProfile.primary_goal
+                  ? playerProfile.primary_goal.split(',').map(g => g.replace(/_/g, ' ')).join(', ')
+                  : '-'}
               </p>
             </div>
             <div>

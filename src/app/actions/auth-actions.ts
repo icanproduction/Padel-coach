@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import type { Profile } from '@/types/database'
 
+const EMAIL_DOMAIN = 'padel.local'
+
 export async function logout() {
   const supabase = await createServerSupabaseClient()
   await supabase.auth.signOut()
@@ -36,7 +38,7 @@ export async function getCurrentUser(): Promise<{
 }
 
 export async function registerUser(input: {
-  email: string
+  username: string
   password: string
   full_name: string
   role: 'coach' | 'player'
@@ -45,16 +47,28 @@ export async function registerUser(input: {
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Check username uniqueness
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', input.username.toLowerCase())
+      .single()
+
+    if (existing) return { error: 'Username sudah dipakai' }
+
+    const email = `${input.username.toLowerCase()}@${EMAIL_DOMAIN}`
+
     // Pass metadata - the database trigger (handle_new_user) will
     // auto-create profiles and player_profiles rows
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: input.email,
+      email,
       password: input.password,
       options: {
         data: {
           full_name: input.full_name,
           role: input.role,
           phone: input.phone || null,
+          username: input.username.toLowerCase(),
         },
       },
     })

@@ -6,7 +6,7 @@ import { registerUser } from '@/app/actions/auth-actions'
 
 export function RegisterForm() {
   const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'player' | 'coach'>('player')
@@ -19,8 +19,14 @@ export function RegisterForm() {
     setLoading(true)
     setError(null)
 
+    if (username.includes('@') || username.includes(' ')) {
+      setError('Username tidak boleh mengandung @ atau spasi')
+      setLoading(false)
+      return
+    }
+
     const result = await registerUser({
-      email,
+      username,
       password,
       full_name: fullName,
       role,
@@ -96,17 +102,19 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="reg-email" className="block text-sm font-medium text-foreground mb-1.5">
-            Email
+          <label htmlFor="reg-username" className="block text-sm font-medium text-foreground mb-1.5">
+            Username
           </label>
           <input
-            id="reg-email"
-            type="email"
+            id="reg-username"
+            type="text"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="you@example.com"
+            placeholder="username"
+            autoCapitalize="none"
+            autoCorrect="off"
           />
         </div>
 
