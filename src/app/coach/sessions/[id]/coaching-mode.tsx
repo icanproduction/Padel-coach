@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import { ArrowLeft, ArrowRight, Loader2, ChevronDown, Target, AlertCircle, Crosshair, CheckCircle2, MapPin, MessageCircle, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { getModuleById, getCurriculumByModuleId } from '@/data/curriculum'
+import { getDrillWithContext } from '@/data/curriculum'
 import { getModuleContent } from '@/data/module-content'
 import { saveCoachingScores } from '@/app/actions/coaching-actions'
 import { ScoreSlider } from '@/components/features/score-slider'
@@ -58,25 +58,36 @@ export function CoachingMode({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // Build flat drill steps from selected modules
+  // Build drill steps from selected drill IDs
   const drillSteps = useMemo<DrillStep[]>(() => {
     const steps: DrillStep[] = []
-    for (const moduleId of selectedModules) {
-      const mod = getModuleById(moduleId)
-      const curriculum = getCurriculumByModuleId(moduleId)
-      if (!mod || !curriculum) continue
-      for (let i = 0; i < mod.drills.length; i++) {
-        steps.push({
-          moduleId: mod.id,
-          moduleName: mod.name,
-          curriculumName: curriculum.name,
-          curriculumId: curriculum.id,
-          drillId: mod.drills[i].id,
-          drillName: mod.drills[i].name,
-          drillIndexInModule: i,
-          totalDrillsInModule: mod.drills.length,
-        })
-      }
+    // Group by module to compute indexes
+    const moduleCounters = new Map<string, { count: number; total: number }>()
+
+    // First pass: count drills per module
+    for (const drillId of selectedModules) {
+      const ctx = getDrillWithContext(drillId)
+      if (!ctx) continue
+      const existing = moduleCounters.get(ctx.module.id)
+      moduleCounters.set(ctx.module.id, { count: 0, total: (existing?.total ?? 0) + 1 })
+    }
+
+    // Second pass: build steps
+    for (const drillId of selectedModules) {
+      const ctx = getDrillWithContext(drillId)
+      if (!ctx) continue
+      const counter = moduleCounters.get(ctx.module.id)!
+      steps.push({
+        moduleId: ctx.module.id,
+        moduleName: ctx.module.name,
+        curriculumName: ctx.curriculum.name,
+        curriculumId: ctx.curriculum.id,
+        drillId: ctx.drill.id,
+        drillName: ctx.drill.name,
+        drillIndexInModule: counter.count,
+        totalDrillsInModule: counter.total,
+      })
+      counter.count++
     }
     return steps
   }, [selectedModules])

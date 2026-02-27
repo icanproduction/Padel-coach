@@ -317,6 +317,23 @@ export function getCurriculumByModuleId(moduleId: string): Curriculum | undefine
 }
 
 /**
+ * Finds a drill by its ID and returns it with its module and curriculum context.
+ */
+export function getDrillWithContext(drillId: string): {
+  drill: Drill
+  module: Module
+  curriculum: Curriculum
+} | undefined {
+  for (const curriculum of CURRICULUMS) {
+    for (const mod of curriculum.modules) {
+      const drill = mod.drills.find((d) => d.id === drillId)
+      if (drill) return { drill, module: mod, curriculum }
+    }
+  }
+  return undefined
+}
+
+/**
  * Gets the next module in the same curriculum after the given module ID.
  * Returns undefined if the module is the last in its curriculum.
  */

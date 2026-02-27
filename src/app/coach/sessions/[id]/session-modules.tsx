@@ -2,33 +2,35 @@
 
 import { useState } from 'react'
 import { Pencil, BookOpen } from 'lucide-react'
-import { getModuleById, getCurriculumByModuleId } from '@/data/curriculum'
+import { getDrillWithContext } from '@/data/curriculum'
 import { ModuleSelector } from './module-selector'
 
 interface SessionModulesProps {
   sessionId: string
-  selectedModules: string[]
+  selectedModules: string[] // now stores drill IDs
   isCompleted: boolean
 }
 
 export function SessionModules({ sessionId, selectedModules, isCompleted }: SessionModulesProps) {
   const [showSelector, setShowSelector] = useState(false)
 
-  // Resolve module names
-  const moduleInfo = selectedModules
-    .map(id => {
-      const mod = getModuleById(id)
-      const curriculum = getCurriculumByModuleId(id)
-      return mod ? { id: mod.id, name: mod.name, curriculumName: curriculum?.name ?? '' } : null
-    })
-    .filter(Boolean) as { id: string; name: string; curriculumName: string }[]
+  // Group selected drills by module
+  const moduleMap = new Map<string, { moduleName: string; drills: { id: string; name: string }[] }>()
+  for (const drillId of selectedModules) {
+    const ctx = getDrillWithContext(drillId)
+    if (!ctx) continue
+    if (!moduleMap.has(ctx.module.id)) {
+      moduleMap.set(ctx.module.id, { moduleName: ctx.module.name, drills: [] })
+    }
+    moduleMap.get(ctx.module.id)!.drills.push({ id: ctx.drill.id, name: ctx.drill.name })
+  }
 
   return (
     <>
       <div className="bg-card rounded-xl border border-border px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Modules
+            Drills
           </h2>
           {!isCompleted && (
             <button
@@ -43,24 +45,31 @@ export function SessionModules({ sessionId, selectedModules, isCompleted }: Sess
               ) : (
                 <>
                   <BookOpen className="w-3 h-3" />
-                  Select Modules
+                  Pilih Drills
                 </>
               )}
             </button>
           )}
         </div>
 
-        {moduleInfo.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No modules selected yet.</p>
+        {moduleMap.size === 0 ? (
+          <p className="text-xs text-muted-foreground">Belum ada drills dipilih.</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {moduleInfo.map(mod => (
-              <span
-                key={mod.id}
-                className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 text-primary"
-              >
-                {mod.name}
-              </span>
+          <div className="space-y-3">
+            {Array.from(moduleMap.entries()).map(([moduleId, group]) => (
+              <div key={moduleId}>
+                <p className="text-xs font-semibold text-muted-foreground mb-1.5">{group.moduleName}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {group.drills.map(drill => (
+                    <span
+                      key={drill.id}
+                      className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/10 text-primary"
+                    >
+                      {drill.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
