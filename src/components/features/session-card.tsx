@@ -99,19 +99,7 @@ export function SessionCard({
           {locationName && (
             <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-              {locationMapsLink ? (
-                <a
-                  href={locationMapsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="truncate text-primary hover:underline"
-                >
-                  {locationName}
-                </a>
-              ) : (
-                <span className="truncate">{locationName}</span>
-              )}
+              <span className="truncate">{locationName}</span>
             </div>
           )}
 
@@ -134,18 +122,12 @@ export function SessionCard({
             </span>
           </div>
 
-          {/* ReClub link */}
+          {/* ReClub link indicator */}
           {reclubUrl && (
-            <a
-              href={reclubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-primary hover:underline max-w-full"
-            >
+            <div className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-primary max-w-full">
               <Link2 className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">Book via ReClub</span>
-            </a>
+              <span className="truncate">ReClub linked</span>
+            </div>
           )}
 
           {notes && (

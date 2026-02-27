@@ -56,6 +56,7 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
 
   const [formData, setFormData] = useState({
     date: '',
+    time: '07:00',
     session_type: 'coaching_drilling' as SessionType,
     max_players: 4,
     location_id: '',
@@ -72,6 +73,7 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
   function resetForm() {
     setFormData({
       date: '',
+      time: '07:00',
       session_type: 'coaching_drilling',
       max_players: 4,
       location_id: '',
@@ -88,14 +90,15 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
     setError(null)
 
     if (!formData.date) {
-      setError('Please select a date and time')
+      setError('Pilih tanggal dulu')
       return
     }
 
     startTransition(async () => {
+      const dateTime = `${formData.date}T${formData.time}`
       const result = await createSession({
         coach_id: coachId,
-        date: new Date(formData.date).toISOString(),
+        date: new Date(dateTime).toISOString(),
         session_type: formData.session_type,
         max_players: isOpenPlay ? 99 : formData.max_players,
         location_id: formData.location_id || undefined,
@@ -181,19 +184,33 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
             </div>
           </section>
 
-          {/* Date & Time */}
-          <section>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
-              Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.date}
-              onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              required
-            />
-          </section>
+          {/* Date & Time — separate inputs */}
+          <div className="grid grid-cols-2 gap-3">
+            <section>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
+                Tanggal
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              />
+            </section>
+            <section>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
+                Jam
+              </label>
+              <input
+                type="time"
+                value={formData.time}
+                onChange={(e) => setFormData((prev) => ({ ...prev, time: e.target.value }))}
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              />
+            </section>
+          </div>
 
           {/* Location */}
           <section>
