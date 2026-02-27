@@ -58,12 +58,12 @@ export function SessionModules({ sessionId, selectedModules, isCompleted }: Sess
           <div className="space-y-3">
             {Array.from(moduleMap.entries()).map(([moduleId, group]) => (
               <div key={moduleId}>
-                <p className="text-xs font-semibold text-muted-foreground mb-1.5">{group.moduleName}</p>
-                <div className="flex flex-wrap gap-1.5">
+                <p className="text-[10px] font-semibold text-muted-foreground mb-1">{group.moduleName}</p>
+                <div className="flex flex-wrap gap-1">
                   {group.drills.map(drill => (
                     <span
                       key={drill.id}
-                      className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/10 text-primary"
+                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary"
                     >
                       {drill.name}
                     </span>
