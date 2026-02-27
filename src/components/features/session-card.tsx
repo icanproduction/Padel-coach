@@ -55,15 +55,10 @@ export function SessionCard({
 }: SessionCardProps) {
   const isOpenPlay = sessionType === 'open_play'
   const sessionDate = new Date(date)
-  const dateStr = sessionDate.toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-  const timeStr = sessionDate.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const dateStr = `${DAYS[sessionDate.getDay()]} ${sessionDate.getDate()} ${MONTHS[sessionDate.getMonth()]}`
+  const timeStr = `${String(sessionDate.getHours()).padStart(2, '0')}:${String(sessionDate.getMinutes()).padStart(2, '0')}`
 
   const details: string[] = []
   if (courtsBooked && courtsBooked > 0) {

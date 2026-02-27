@@ -391,20 +391,19 @@ export function CoachingMode({
             </div>
           </div>
 
-          {/* Next Drill / View Summary button */}
-          <button
-            onClick={handleNext}
-            className="w-full py-3.5 text-sm font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-          >
-            {isLastDrill ? 'View Summary' : (
-              <>
-                Next Drill
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+          {/* Extra space so content can scroll above nav */}
+          <div className="h-32" />
+
         </div>
       </div>
+
+      {/* Floating Next button — bottom right */}
+      <button
+        onClick={handleNext}
+        className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center"
+      >
+        <ArrowRight className="w-6 h-6" />
+      </button>
     </div>
   )
 }
