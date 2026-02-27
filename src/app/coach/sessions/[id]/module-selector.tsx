@@ -101,7 +101,7 @@ export function ModuleSelector({ sessionId, initialSelected, onClose }: ModuleSe
 
       {/* Scrollable curriculum cards */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
+        <div className="max-w-lg mx-auto px-4 py-4 pb-32 space-y-3">
           {CURRICULUMS.map(curriculum => {
             const allDrills = curriculum.modules.flatMap(m => m.drills)
             const selectedCount = allDrills.filter(d => selected.has(d.id)).length
