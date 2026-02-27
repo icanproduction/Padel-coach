@@ -195,8 +195,8 @@ export function ModuleSelector({ sessionId, initialSelected, onClose }: ModuleSe
             )
           })}
 
-          {/* Extra scroll space so bottom card is reachable above nav */}
-          <div className="h-[50vh]" />
+          {/* Extra scroll space so expanded bottom card is fully reachable */}
+          <div className="h-[80vh]" />
         </div>
       </div>
     </div>
