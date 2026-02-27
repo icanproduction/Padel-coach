@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useCallback } from 'react'
-import { ArrowLeft, Loader2, Check, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Loader2, Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { CURRICULUMS } from '@/data/curriculum'
 import { saveSessionModules } from '@/app/actions/session-actions'
@@ -15,16 +15,7 @@ interface ModuleSelectorProps {
 export function ModuleSelector({ sessionId, initialSelected, onClose }: ModuleSelectorProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected))
   const [isPending, startTransition] = useTransition()
-  const [expandedCurriculums, setExpandedCurriculums] = useState<Set<string>>(() => {
-    // Auto-expand curriculums that have selected drills
-    const expanded = new Set<string>()
-    for (const c of CURRICULUMS) {
-      if (c.modules.some(m => m.drills.some(d => initialSelected.includes(d.id)))) {
-        expanded.add(c.id)
-      }
-    }
-    return expanded
-  })
+  const [activeTab, setActiveTab] = useState(0)
   const router = useRouter()
   const savingRef = useRef(false)
 
@@ -63,21 +54,37 @@ export function ModuleSelector({ sessionId, initialSelected, onClose }: ModuleSe
     })
   }
 
-  function toggleCurriculum(curriculumId: string) {
-    setExpandedCurriculums(prev => {
-      const next = new Set(prev)
-      if (next.has(curriculumId)) {
-        next.delete(curriculumId)
-      } else {
-        next.add(curriculumId)
-      }
-      return next
-    })
-  }
-
   function handleBack() {
     if (isPending) return
     saveAndClose(selected)
+  }
+
+  const activeCurriculum = CURRICULUMS[activeTab]
+
+  // Split 6 curriculums into 2 rows of 3
+  const row1 = CURRICULUMS.slice(0, 3)
+  const row2 = CURRICULUMS.slice(3, 6)
+
+  function TabButton({ curriculum, index }: { curriculum: typeof CURRICULUMS[0]; index: number }) {
+    const drillCount = curriculum.modules.flatMap(m => m.drills).filter(d => selected.has(d.id)).length
+    const isActive = activeTab === index
+    return (
+      <button
+        onClick={() => setActiveTab(index)}
+        className={`flex-1 px-2 py-2 text-[11px] font-medium text-center rounded-lg border transition-colors relative ${
+          isActive
+            ? 'border-primary bg-primary/10 text-primary'
+            : 'border-border bg-card text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        <span className="line-clamp-1">{curriculum.name.split('(')[0].trim()}</span>
+        {drillCount > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[9px] font-bold bg-primary text-primary-foreground rounded-full px-1">
+            {drillCount}
+          </span>
+        )}
+      </button>
+    )
   }
 
   return (
@@ -99,104 +106,84 @@ export function ModuleSelector({ sessionId, initialSelected, onClose }: ModuleSe
         <span className="text-xs text-muted-foreground font-medium">{selected.size} dipilih</span>
       </div>
 
-      {/* Scrollable curriculum cards */}
+      {/* 2-row tab grid: 3 per row */}
+      <div className="bg-card border-b border-border px-3 py-2.5 space-y-1.5">
+        <div className="flex gap-1.5">
+          {row1.map((c, i) => (
+            <TabButton key={c.id} curriculum={c} index={i} />
+          ))}
+        </div>
+        <div className="flex gap-1.5">
+          {row2.map((c, i) => (
+            <TabButton key={c.id} curriculum={c} index={i + 3} />
+          ))}
+        </div>
+      </div>
+
+      {/* Drills list for active curriculum */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-3">
-          {CURRICULUMS.map(curriculum => {
-            const allDrills = curriculum.modules.flatMap(m => m.drills)
-            const selectedCount = allDrills.filter(d => selected.has(d.id)).length
-            const isExpanded = expandedCurriculums.has(curriculum.id)
+        <div className="max-w-lg mx-auto px-4 py-4 space-y-5">
+          {activeCurriculum.modules.map(mod => {
+            const drillIds = mod.drills.map(d => d.id)
+            const selectedCount = drillIds.filter(id => selected.has(id)).length
+            const allSelected = selectedCount === drillIds.length
 
             return (
-              <div key={curriculum.id} className="rounded-xl border border-border bg-card overflow-hidden">
-                {/* Curriculum header — tap to expand/collapse */}
+              <div key={mod.id}>
+                {/* Module header — tap to toggle all */}
                 <button
-                  onClick={() => toggleCurriculum(curriculum.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-muted/50 transition-colors"
+                  onClick={() => toggleModule(mod.id, drillIds)}
+                  disabled={isPending}
+                  className="flex items-center gap-2 mb-2 w-full text-left"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{curriculum.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                      {curriculum.modules.length} modules &middot; {allDrills.length} drills
-                    </p>
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    allSelected
+                      ? 'border-primary bg-primary'
+                      : selectedCount > 0
+                        ? 'border-primary bg-primary/30'
+                        : 'border-muted-foreground/30'
+                  }`}>
+                    {allSelected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
                   </div>
-                  {selectedCount > 0 && (
-                    <span className="text-[11px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
-                      {selectedCount}
-                    </span>
-                  )}
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
+                  <span className="text-sm font-semibold">{mod.name}</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {selectedCount}/{drillIds.length}
+                  </span>
                 </button>
 
-                {/* Expanded: modules & drills */}
-                {isExpanded && (
-                  <div className="px-4 pb-4 space-y-4 border-t border-border pt-3">
-                    {curriculum.modules.map(mod => {
-                      const drillIds = mod.drills.map(d => d.id)
-                      const modSelectedCount = drillIds.filter(id => selected.has(id)).length
-                      const allSelected = modSelectedCount === drillIds.length
-
-                      return (
-                        <div key={mod.id}>
-                          {/* Module header — tap to toggle all drills */}
-                          <button
-                            onClick={() => toggleModule(mod.id, drillIds)}
-                            disabled={isPending}
-                            className="flex items-center gap-2 mb-2 w-full text-left"
-                          >
-                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                              allSelected
-                                ? 'border-primary bg-primary'
-                                : modSelectedCount > 0
-                                  ? 'border-primary bg-primary/30'
-                                  : 'border-muted-foreground/30'
-                            }`}>
-                              {allSelected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
-                            </div>
-                            <span className="text-xs font-semibold flex-1">{mod.name}</span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {modSelectedCount}/{drillIds.length}
-                            </span>
-                          </button>
-
-                          {/* Individual drills */}
-                          <div className="space-y-1.5 ml-6">
-                            {mod.drills.map(drill => {
-                              const isSelected = selected.has(drill.id)
-                              return (
-                                <button
-                                  key={drill.id}
-                                  onClick={() => toggleDrill(drill.id)}
-                                  disabled={isPending}
-                                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-colors text-left ${
-                                    isSelected
-                                      ? 'border-primary bg-primary/5'
-                                      : 'border-border hover:bg-muted/50'
-                                  }`}
-                                >
-                                  <div className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                                    isSelected
-                                      ? 'border-primary bg-primary'
-                                      : 'border-muted-foreground/30'
-                                  }`}>
-                                    {isSelected && <Check className="w-2 h-2 text-primary-foreground" />}
-                                  </div>
-                                  <span className="text-xs font-medium">{drill.name}</span>
-                                </button>
-                              )
-                            })}
-                          </div>
+                {/* Individual drills */}
+                <div className="space-y-1.5 ml-6">
+                  {mod.drills.map(drill => {
+                    const isSelected = selected.has(drill.id)
+                    return (
+                      <button
+                        key={drill.id}
+                        onClick={() => toggleDrill(drill.id)}
+                        disabled={isPending}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-colors text-left ${
+                          isSelected
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border bg-card hover:bg-muted/50'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected
+                            ? 'border-primary bg-primary'
+                            : 'border-muted-foreground/30'
+                        }`}>
+                          {isSelected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                        <span className="text-xs font-medium">{drill.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             )
           })}
 
-          {/* Extra scroll space so expanded bottom card is fully reachable */}
-          <div className="h-screen" />
+          {/* Extra scroll space so bottom drills are reachable above nav */}
+          <div className="h-32" />
         </div>
       </div>
     </div>
