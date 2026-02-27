@@ -397,13 +397,30 @@ export function CoachingMode({
         </div>
       </div>
 
-      {/* Floating Next button — bottom right */}
-      <button
-        onClick={handleNext}
-        className="fixed bottom-24 right-4 z-[60] w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center"
-      >
-        <ArrowRight className="w-6 h-6" />
-      </button>
+      {/* Floating nav buttons */}
+      <div className="fixed bottom-24 left-4 right-4 z-[60] flex justify-between pointer-events-none">
+        {/* Previous */}
+        {!isFirstDrill ? (
+          <button
+            onClick={handlePrev}
+            className="pointer-events-auto px-4 py-3 rounded-full bg-card border border-border text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-accent active:scale-95 transition-all flex items-center gap-1.5 text-sm font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Prev
+          </button>
+        ) : (
+          <div />
+        )}
+
+        {/* Next */}
+        <button
+          onClick={handleNext}
+          className="pointer-events-auto px-4 py-3 rounded-full bg-primary text-primary-foreground shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 text-sm font-semibold"
+        >
+          {isLastDrill ? 'Summary' : 'Next'}
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   )
 }
