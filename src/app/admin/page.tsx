@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
         session_players(player_id, status),
-        locations(id, name)
+        locations(id, name, maps_link)
       `)
       .order('date', { ascending: false })
       .limit(5),
@@ -81,23 +81,23 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
             <div
               key={stat.label}
-              className="bg-card rounded-xl border border-border p-4"
+              className="bg-card rounded-xl border border-border p-3"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className={`p-2 rounded-lg ${stat.color}`}>
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {stat.label}
                   </p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-xl font-bold">{stat.value}</p>
                 </div>
               </div>
             </div>
@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
       {/* Quick actions */}
       <div className="bg-card rounded-xl border border-border p-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="space-y-2">
           <Link
             href="/admin/sessions?create=true"
             className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
@@ -169,7 +169,7 @@ export default async function AdminDashboard() {
         </div>
 
         {recentSessions && recentSessions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-3">
             {recentSessions.map((session: any) => (
               <Link key={session.id} href={`/admin/sessions/${session.id}`}>
                 <SessionCard
@@ -178,6 +178,7 @@ export default async function AdminDashboard() {
                   coachName={session.coach?.full_name ?? 'Unknown'}
                   sessionType={session.session_type}
                   locationName={session.locations?.name}
+                  locationMapsLink={session.locations?.maps_link}
                   courtsBooked={session.courts_booked}
                   durationHours={session.duration_hours}
                   reclubUrl={session.reclub_url}

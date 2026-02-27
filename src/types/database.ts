@@ -100,11 +100,12 @@ export interface Location {
   id: string
   name: string
   address: string
-  google_maps_url: string
-  total_courts: number
-  notes: string | null
+  courts: number
   is_active: boolean
+  reclub_link: string | null
+  maps_link: string | null
   created_at: string
+  updated_at: string
 }
 
 export interface Session {
@@ -215,9 +216,8 @@ export interface CreateSessionInput {
 export interface CreateLocationInput {
   name: string
   address: string
-  google_maps_url: string
-  total_courts: number
-  notes?: string
+  courts: number
+  maps_link?: string
 }
 
 export interface UpdateLocationInput extends Partial<CreateLocationInput> {

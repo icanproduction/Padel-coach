@@ -67,7 +67,7 @@ export function CreateSessionForm({ coaches, locations, onClose }: CreateSession
 
   const isOpenPlay = formData.session_type === 'open_play'
   const selectedLocation = locations.find((l) => l.id === formData.location_id)
-  const maxCourts = selectedLocation?.total_courts ?? 5
+  const maxCourts = selectedLocation?.courts ?? 5
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -209,7 +209,7 @@ export function CreateSessionForm({ coaches, locations, onClose }: CreateSession
               <option value="">Select location...</option>
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
-                  {loc.name} ({loc.total_courts} courts)
+                  {loc.name} ({loc.courts} courts)
                 </option>
               ))}
             </select>

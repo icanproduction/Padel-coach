@@ -25,6 +25,7 @@ interface SessionCardData {
   coachName: string
   sessionType: string
   locationName?: string | null
+  locationMapsLink?: string | null
   courtsBooked?: number | null
   durationHours?: number
   reclubUrl?: string | null

@@ -186,6 +186,63 @@ export async function completeOnboarding(input: OnboardingInput) {
   }
 }
 
+export async function createCoach(input: {
+  full_name: string
+  username: string
+  phone?: string
+}): Promise<{ data?: { userId: string }; error?: string }> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admin can create coaches' }
+    }
+
+    const username = input.username.toLowerCase().trim()
+
+    if (!username || username.includes('@') || username.includes(' ')) {
+      return { error: 'Username tidak valid' }
+    }
+
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .single()
+
+    if (existing) return { error: 'Username sudah dipakai' }
+
+    const adminClient = createServiceRoleClient()
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+      email: `${username}@${EMAIL_DOMAIN}`,
+      password: '123456',
+      email_confirm: true,
+      user_metadata: {
+        full_name: input.full_name,
+        role: 'coach',
+        username,
+        phone: input.phone || null,
+      },
+    })
+
+    if (authError) return { error: authError.message }
+    if (!authData.user) return { error: 'Failed to create coach' }
+
+    revalidatePath('/admin/coaches')
+    return { data: { userId: authData.user.id } }
+  } catch {
+    return { error: 'Failed to create coach' }
+  }
+}
+
 export async function getAllCoaches() {
   try {
     const supabase = await createServerSupabaseClient()

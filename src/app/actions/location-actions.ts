@@ -63,9 +63,8 @@ export async function createLocation(input: CreateLocationInput) {
       .insert({
         name: input.name,
         address: input.address,
-        google_maps_url: input.google_maps_url,
-        total_courts: input.total_courts,
-        notes: input.notes || null,
+        courts: input.courts,
+        maps_link: input.maps_link || null,
       })
       .select()
       .single()
@@ -95,9 +94,14 @@ export async function updateLocation(locationId: string, input: UpdateLocationIn
       return { error: 'Only admin can update locations' }
     }
 
+    const updateData = { ...input }
+    if ('maps_link' in updateData && !updateData.maps_link) {
+      updateData.maps_link = undefined
+    }
+
     const { data, error } = await supabase
       .from('locations')
-      .update(input)
+      .update(updateData)
       .eq('id', locationId)
       .select()
       .single()

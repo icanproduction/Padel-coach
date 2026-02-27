@@ -25,7 +25,7 @@ export default async function CoachSessionsPage() {
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
         session_players(player_id, status),
-        locations(id, name, address, google_maps_url, total_courts)
+        locations(id, name, address, maps_link, courts)
       `)
       .eq('coach_id', user.id)
       .order('date', { ascending: false }),
@@ -87,6 +87,7 @@ export default async function CoachSessionsPage() {
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
                     locationName={session.locations?.name}
+                    locationMapsLink={session.locations?.maps_link}
                     courtsBooked={session.courts_booked}
                     durationHours={session.duration_hours}
                     reclubUrl={session.reclub_url}
@@ -133,6 +134,7 @@ export default async function CoachSessionsPage() {
                     coachName={session.coach?.full_name ?? 'You'}
                     sessionType={session.session_type}
                     locationName={session.locations?.name}
+                    locationMapsLink={session.locations?.maps_link}
                     courtsBooked={session.courts_booked}
                     durationHours={session.duration_hours}
                     reclubUrl={session.reclub_url}

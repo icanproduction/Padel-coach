@@ -34,7 +34,7 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
         joined_at,
         profiles:profiles!session_players_player_id_fkey(id, full_name, email, avatar_url)
       ),
-      locations(id, name, address, google_maps_url, total_courts)
+      locations(id, name, address, maps_link, courts)
     `)
     .eq('id', id)
     .single()
@@ -147,15 +147,17 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
                     — {session.courts_booked} Court{session.courts_booked > 1 ? 's' : ''}, {session.duration_hours} Hr{session.duration_hours > 1 ? 's' : ''}
                   </span>
                 )}
-                <a
-                  href={location.google_maps_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline ml-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  Maps
-                </a>
+                {location.maps_link && (
+                  <a
+                    href={location.maps_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline ml-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Maps
+                  </a>
+                )}
               </div>
             )}
 

@@ -28,6 +28,7 @@ interface SessionCardProps {
   maxPlayers: number
   playerCount?: number
   locationName?: string | null
+  locationMapsLink?: string | null
   courtsBooked?: number | null
   durationHours?: number
   reclubUrl?: string | null
@@ -44,6 +45,7 @@ export function SessionCard({
   maxPlayers,
   playerCount = 0,
   locationName,
+  locationMapsLink,
   courtsBooked,
   durationHours,
   reclubUrl,
@@ -97,7 +99,19 @@ export function SessionCard({
           {locationName && (
             <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{locationName}</span>
+              {locationMapsLink ? (
+                <a
+                  href={locationMapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="truncate text-primary hover:underline"
+                >
+                  {locationName}
+                </a>
+              ) : (
+                <span className="truncate">{locationName}</span>
+              )}
             </div>
           )}
 

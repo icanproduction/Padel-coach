@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS locations (
   courts INTEGER DEFAULT 1,
   is_active BOOLEAN DEFAULT TRUE,
   reclub_link TEXT,
+  maps_link TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

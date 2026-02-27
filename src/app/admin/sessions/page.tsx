@@ -23,7 +23,7 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
         session_players(player_id, status),
-        locations(id, name, address, google_maps_url, total_courts)
+        locations(id, name, address, maps_link, courts)
       `)
       .order('date', { ascending: false }),
     supabase
@@ -64,7 +64,7 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
           </p>
         </div>
       ) : sessions && sessions.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-3">
           {sessions.map((session: any) => (
             <Link key={session.id} href={`/admin/sessions/${session.id}`}>
               <SessionCard
@@ -73,6 +73,7 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
                 coachName={session.coach?.full_name ?? 'Unknown'}
                 sessionType={session.session_type}
                 locationName={session.locations?.name}
+                locationMapsLink={session.locations?.maps_link}
                 courtsBooked={session.courts_booked}
                 durationHours={session.duration_hours}
                 reclubUrl={session.reclub_url}

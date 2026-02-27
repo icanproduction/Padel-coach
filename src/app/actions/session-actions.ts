@@ -84,7 +84,7 @@ export async function getAllSessions(filters?: { status?: SessionStatus; coach_i
         *,
         coach:profiles!sessions_coach_id_fkey(id, full_name, email, avatar_url),
         session_players(player_id, status),
-        locations(id, name, address, google_maps_url, total_courts)
+        locations(id, name, address, maps_link, courts)
       `)
       .order('date', { ascending: false })
 
@@ -151,7 +151,7 @@ export async function getSessionById(sessionId: string) {
           joined_at,
           profiles:profiles!session_players_player_id_fkey(id, full_name, email, avatar_url)
         ),
-        locations(id, name, address, google_maps_url, total_courts)
+        locations(id, name, address, maps_link, courts)
       `)
       .eq('id', sessionId)
       .single()

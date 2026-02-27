@@ -141,6 +141,7 @@ export default async function CoachDashboard() {
                   coachName={session.coach?.full_name ?? 'Unknown'}
                   sessionType={session.session_type}
                   locationName={session.locations?.name}
+                  locationMapsLink={session.locations?.maps_link}
                   courtsBooked={session.courts_booked}
                   durationHours={session.duration_hours}
                   reclubUrl={session.reclub_url}
