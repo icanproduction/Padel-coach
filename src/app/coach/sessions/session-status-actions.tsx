@@ -8,9 +8,10 @@ import { Play, CheckCircle2, Loader2 } from 'lucide-react'
 interface SessionStatusActionsProps {
   sessionId: string
   currentStatus: string
+  onStartSession?: () => void
 }
 
-export function SessionStatusActions({ sessionId, currentStatus }: SessionStatusActionsProps) {
+export function SessionStatusActions({ sessionId, currentStatus, onStartSession }: SessionStatusActionsProps) {
   const [isPending, startTransition] = useTransition()
 
   function handleStatusChange(newStatus: 'in_progress' | 'completed', e: React.MouseEvent) {
@@ -18,6 +19,9 @@ export function SessionStatusActions({ sessionId, currentStatus }: SessionStatus
     e.stopPropagation()
     startTransition(async () => {
       await updateSessionStatus(sessionId, newStatus)
+      if (newStatus === 'in_progress' && onStartSession) {
+        onStartSession()
+      }
     })
   }
 

@@ -7,6 +7,7 @@ interface PlayerCardProps {
   id: string
   name: string
   avatarUrl?: string | null
+  gender?: string | null
   grade: string
   archetype: string
   totalSessions: number
@@ -18,6 +19,7 @@ export function PlayerCard({
   id,
   name,
   avatarUrl,
+  gender,
   grade,
   archetype,
   totalSessions,
@@ -51,7 +53,14 @@ export function PlayerCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{name}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm truncate">{name}</h3>
+            {gender && (
+              <span className="text-xs text-muted-foreground">
+                {gender === 'male' ? '♂' : '♀'}
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
             <GradeBadge grade={grade} size="sm" showLabel={false} />
             <ArchetypeBadge archetype={archetype} size="sm" />

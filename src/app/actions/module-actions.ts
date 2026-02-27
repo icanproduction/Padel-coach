@@ -90,7 +90,8 @@ export async function getPlayerModuleProgress(playerId: string) {
       .from('module_records')
       .select(`
         *,
-        coach:profiles!module_records_coach_id_fkey(id, full_name)
+        coach:profiles!module_records_coach_id_fkey(id, full_name),
+        session:sessions(id, date, session_type, status)
       `)
       .eq('player_id', playerId)
       .order('created_at', { ascending: false })

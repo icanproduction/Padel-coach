@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { OnboardingInput } from '@/types/database'
+import type { OnboardingInput, Gender } from '@/types/database'
 
 const EMAIL_DOMAIN = 'padel.local'
 
@@ -10,6 +10,7 @@ export async function createPlayer(input: {
   full_name: string
   username: string
   phone?: string
+  gender: Gender
 }): Promise<{ data?: { userId: string }; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
@@ -58,6 +59,12 @@ export async function createPlayer(input: {
 
     if (authError) return { error: authError.message }
     if (!authData.user) return { error: 'Failed to create player' }
+
+    // Set gender on player_profiles (created by trigger)
+    await supabase
+      .from('player_profiles')
+      .update({ gender: input.gender })
+      .eq('player_id', authData.user.id)
 
     revalidatePath('/coach/players')
     return { data: { userId: authData.user.id } }
@@ -160,6 +167,7 @@ export async function completeOnboarding(input: OnboardingInput) {
     const { error } = await supabase
       .from('player_profiles')
       .update({
+        gender: input.gender,
         experience_level: input.experience_level,
         previous_racket_sport: input.previous_racket_sport || null,
         primary_goal: input.primary_goal,

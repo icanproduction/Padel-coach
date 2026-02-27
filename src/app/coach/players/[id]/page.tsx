@@ -1,12 +1,15 @@
 import { getPlayerById } from '@/app/actions/player-actions'
 import { getPlayerAssessments } from '@/app/actions/assessment-actions'
+import { getPlayerModuleProgress } from '@/app/actions/module-actions'
+import { getPlayerSessions } from '@/app/actions/participant-actions'
 import { GradeBadge } from '@/components/features/grade-badge'
 import { ArchetypeBadge } from '@/components/features/archetype-badge'
-import { AssessmentRadarChart } from '@/components/features/radar-chart'
-import { ProgressLineChart } from '@/components/features/progress-line-chart'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ClipboardList, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, ClipboardList, CalendarDays } from 'lucide-react'
+import { SkillOverview } from './skill-overview'
+import { CurriculumProgress } from './curriculum-progress'
+import { SessionHistory } from './session-history'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,10 +20,13 @@ interface PlayerDetailPageProps {
 export default async function PlayerDetailPage({ params }: PlayerDetailPageProps) {
   const { id } = await params
 
-  const [playerResult, assessmentsResult] = await Promise.all([
-    getPlayerById(id),
-    getPlayerAssessments(id),
-  ])
+  const [playerResult, assessmentsResult, moduleProgressResult, playerSessionsResult] =
+    await Promise.all([
+      getPlayerById(id),
+      getPlayerAssessments(id),
+      getPlayerModuleProgress(id),
+      getPlayerSessions(id),
+    ])
 
   if (playerResult.error || !playerResult.data) {
     notFound()
@@ -28,57 +34,15 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
 
   const player = playerResult.data as any
   const assessments = (assessmentsResult.data ?? []) as any[]
+  const moduleRecords = (moduleProgressResult.data ?? []) as any[]
+  const playerSessions = ((playerSessionsResult.data ?? []) as any[])
+    .filter((ps: any) => ps.session)
+
   const playerProfile = Array.isArray(player.player_profiles)
     ? player.player_profiles[0]
     : player.player_profiles
 
   const latestAssessment = assessments[0] ?? null
-  const previousAssessment = assessments.length >= 2 ? assessments[1] : null
-  const hasTwoOrMore = assessments.length >= 2
-
-  // Build radar chart data from latest (and optionally previous) assessment
-  const radarData = latestAssessment
-    ? [
-        {
-          parameter: 'Reaction',
-          current: latestAssessment.reaction_to_ball,
-          ...(previousAssessment ? { previous: previousAssessment.reaction_to_ball } : {}),
-        },
-        {
-          parameter: 'Swing Size',
-          current: latestAssessment.swing_size,
-          ...(previousAssessment ? { previous: previousAssessment.swing_size } : {}),
-        },
-        {
-          parameter: 'Spacing',
-          current: latestAssessment.spacing_awareness,
-          ...(previousAssessment ? { previous: previousAssessment.spacing_awareness } : {}),
-        },
-        {
-          parameter: 'Recovery',
-          current: latestAssessment.recovery_habit,
-          ...(previousAssessment ? { previous: previousAssessment.recovery_habit } : {}),
-        },
-        {
-          parameter: 'Decision',
-          current: latestAssessment.decision_making,
-          ...(previousAssessment ? { previous: previousAssessment.decision_making } : {}),
-        },
-      ]
-    : []
-
-  // Build progress line chart data (chronological order)
-  const progressData = [...assessments]
-    .reverse()
-    .map((a: any) => ({
-      date: a.created_at,
-      average: a.average_score,
-      reaction_to_ball: a.reaction_to_ball,
-      swing_size: a.swing_size,
-      spacing_awareness: a.spacing_awareness,
-      recovery_habit: a.recovery_habit,
-      decision_making: a.decision_making,
-    }))
 
   return (
     <div className="space-y-6">
@@ -112,7 +76,14 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold truncate">{player.full_name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold truncate">{player.full_name}</h1>
+              {playerProfile?.gender && (
+                <span className="text-sm text-muted-foreground">
+                  {playerProfile.gender === 'male' ? '♂' : '♀'}
+                </span>
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <GradeBadge grade={playerProfile?.current_grade ?? 'Unassessed'} size="sm" />
               <ArchetypeBadge archetype={playerProfile?.current_archetype ?? 'Unassessed'} size="sm" />
@@ -124,136 +95,72 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
               </span>
               <span className="flex items-center gap-1">
                 <ClipboardList className="w-3.5 h-3.5" />
-                {assessments.length} assessments
+                {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
         </div>
-
-        {/* Assess Button */}
-        <Link
-          href={`/coach/assess?player=${id}`}
-          className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium text-sm min-h-[44px] hover:opacity-90 transition-opacity"
-        >
-          <ClipboardList className="w-4 h-4" />
-          Assess This Player
-        </Link>
       </div>
 
-      {/* Radar Chart */}
+      {/* Skill Overview — bar chart graphic (top position) */}
+      <SkillOverview moduleRecords={moduleRecords} />
+
+      {/* Progress — per curriculum tabs + line chart */}
+      <CurriculumProgress moduleRecords={moduleRecords} />
+
+      {/* Discovery Assessment — score numbers */}
       {latestAssessment && (
         <div className="bg-card rounded-xl border border-border p-4">
-          <h2 className="text-base font-semibold mb-1">Skill Overview</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">Discovery Assessment</h2>
+            <Link
+              href={`/coach/assess?player=${id}`}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Re-assess
+            </Link>
+          </div>
           <p className="text-xs text-muted-foreground mb-3">
-            {hasTwoOrMore
-              ? 'Current assessment vs previous assessment'
-              : 'Latest assessment results'}
+            {latestAssessment.player_grade} — Avg: {latestAssessment.average_score}/10
+            {latestAssessment.coach?.full_name && (
+              <> — by {latestAssessment.coach.full_name}</>
+            )}
           </p>
-          <AssessmentRadarChart data={radarData} showPrevious={hasTwoOrMore} height={280} />
+          <div className="grid grid-cols-3 gap-2">
+            <ScoreCell label="Reaction" value={latestAssessment.reaction_to_ball} />
+            <ScoreCell label="Swing Size" value={latestAssessment.swing_size} />
+            <ScoreCell label="Spacing" value={latestAssessment.spacing_awareness} />
+            <ScoreCell label="Recovery" value={latestAssessment.recovery_habit} />
+            <ScoreCell label="Decision" value={latestAssessment.decision_making} />
+            <ScoreCell label="Average" value={latestAssessment.average_score} highlight />
+          </div>
         </div>
       )}
 
-      {/* Progress Line Chart */}
-      {assessments.length >= 2 && (
-        <div className="bg-card rounded-xl border border-border p-4">
-          <h2 className="text-base font-semibold mb-1">Progress Over Time</h2>
+      {/* No assessment — CTA */}
+      {!latestAssessment && (
+        <div className="bg-card rounded-xl border border-border p-6 text-center">
+          <ClipboardList className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm font-medium mb-1">No discovery assessment yet</p>
           <p className="text-xs text-muted-foreground mb-3">
-            Score trends across all assessments
-          </p>
-          <ProgressLineChart data={progressData} showParameters={true} height={280} />
-        </div>
-      )}
-
-      {/* No assessments state */}
-      {assessments.length === 0 && (
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-medium mb-1">No assessments yet</p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Create the first assessment for this player.
+            Run a discovery session to assess this player.
           </p>
           <Link
             href={`/coach/assess?player=${id}`}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium text-sm min-h-[44px] hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
           >
             <ClipboardList className="w-4 h-4" />
-            Create Assessment
+            Assess Player
           </Link>
         </div>
       )}
 
-      {/* Assessment History */}
-      {assessments.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Assessment History</h2>
-          <div className="space-y-3">
-            {assessments.map((assessment: any) => (
-              <div
-                key={assessment.id}
-                className="bg-card rounded-xl border border-border p-4"
-              >
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {new Date(assessment.created_at).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      by {assessment.coach?.full_name ?? 'Unknown Coach'}
-                      {assessment.session
-                        ? ` | ${assessment.session.session_type?.replace('_', ' ')} session`
-                        : ''}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <GradeBadge grade={assessment.player_grade} size="sm" showLabel={false} />
-                    <ArchetypeBadge archetype={assessment.player_archetype} size="sm" />
-                  </div>
-                </div>
-
-                {/* Scores grid */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  <ScoreCell label="Reaction" value={assessment.reaction_to_ball} />
-                  <ScoreCell label="Swing" value={assessment.swing_size} />
-                  <ScoreCell label="Spacing" value={assessment.spacing_awareness} />
-                  <ScoreCell label="Recovery" value={assessment.recovery_habit} />
-                  <ScoreCell label="Decision" value={assessment.decision_making} />
-                  <ScoreCell label="Average" value={assessment.average_score} highlight />
-                </div>
-
-                {/* Notes */}
-                {assessment.improvement_notes && (
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground font-medium mb-1">Notes</p>
-                    <p className="text-sm">{assessment.improvement_notes}</p>
-                  </div>
-                )}
-
-                {/* Areas to focus */}
-                {assessment.areas_to_focus && assessment.areas_to_focus.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground font-medium mb-1">Areas to Focus</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {assessment.areas_to_focus.map((area: string) => (
-                        <span
-                          key={area}
-                          className="text-xs bg-muted px-2 py-0.5 rounded-full capitalize"
-                        >
-                          {area.replace(/_/g, ' ')}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Session History */}
+      <SessionHistory
+        playerSessions={playerSessions}
+        assessments={assessments}
+        moduleRecords={moduleRecords}
+      />
     </div>
   )
 }

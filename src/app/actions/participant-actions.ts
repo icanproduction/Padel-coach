@@ -4,6 +4,65 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { ParticipantStatus } from '@/types/database'
 
+export async function addPlayerToSession(sessionId: string, playerId: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    // Verify coach/admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'coach' && profile.role !== 'admin')) {
+      return { error: 'Unauthorized' }
+    }
+
+    // Insert with approved status (coach adds directly)
+    const { error } = await supabase
+      .from('session_players')
+      .insert({
+        session_id: sessionId,
+        player_id: playerId,
+        status: 'approved',
+      })
+
+    if (error) {
+      if (error.code === '23505') return { error: 'Player sudah ada di session ini' }
+      return { error: error.message }
+    }
+
+    revalidatePath(`/coach/sessions/${sessionId}`)
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to add player' }
+  }
+}
+
+export async function removePlayerFromSession(sessionId: string, playerId: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { error } = await supabase
+      .from('session_players')
+      .delete()
+      .eq('session_id', sessionId)
+      .eq('player_id', playerId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath(`/coach/sessions/${sessionId}`)
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to remove player' }
+  }
+}
+
 export async function joinSession(sessionId: string) {
   try {
     const supabase = await createServerSupabaseClient()

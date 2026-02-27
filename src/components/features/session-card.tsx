@@ -93,16 +93,20 @@ export function SessionCard({
             <span>Coach: {coachName}</span>
           </div>
 
-          {/* Location + details */}
+          {/* Location */}
           {locationName && (
             <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">
-                {locationName}
-                {details.length > 0 && (
-                  <span className="text-xs opacity-75"> — {details.join(', ')}</span>
-                )}
-              </span>
+              <span className="truncate">{locationName}</span>
+            </div>
+          )}
+
+          {/* Courts & Duration */}
+          {details.length > 0 && (
+            <div className="flex items-center gap-2 mt-1 ml-5 text-xs text-muted-foreground">
+              {details.map((d, i) => (
+                <span key={i} className="bg-muted px-2 py-0.5 rounded-full">{d}</span>
+              ))}
             </div>
           )}
 
@@ -123,10 +127,10 @@ export function SessionCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-primary hover:underline max-w-full"
             >
-              <Link2 className="w-3.5 h-3.5" />
-              Book via ReClub
+              <Link2 className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">Book via ReClub</span>
             </a>
           )}
 

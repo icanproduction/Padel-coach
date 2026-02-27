@@ -42,6 +42,7 @@ export default async function AdminPlayersPage() {
                 id={player.id}
                 name={player.full_name}
                 avatarUrl={player.avatar_url}
+                gender={pp?.gender}
                 grade={pp?.current_grade ?? 'Unassessed'}
                 archetype={pp?.current_archetype ?? 'Unassessed'}
                 totalSessions={pp?.total_sessions ?? 0}

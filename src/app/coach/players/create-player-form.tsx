@@ -18,6 +18,7 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
     full_name: '',
     username: '',
     phone: '',
+    gender: '' as 'male' | 'female' | '',
   })
 
   function handleSubmit(e: React.FormEvent) {
@@ -36,12 +37,17 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
       setError('Username tidak boleh mengandung @ atau spasi')
       return
     }
+    if (!formData.gender) {
+      setError('Gender harus dipilih')
+      return
+    }
 
     startTransition(async () => {
       const result = await createPlayer({
         full_name: formData.full_name.trim(),
         username: formData.username.trim(),
         phone: formData.phone || undefined,
+        gender: formData.gender as 'male' | 'female',
       })
 
       if (result.error) {
@@ -133,6 +139,32 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
                 placeholder="+628xxx"
                 className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
+            </div>
+          </section>
+
+          {/* Gender */}
+          <section>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
+              Gender
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, gender: option.value }))}
+                  className={`py-3 rounded-xl border text-sm font-medium transition-colors ${
+                    formData.gender === option.value
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-muted-foreground'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </section>
 

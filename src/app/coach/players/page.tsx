@@ -50,6 +50,7 @@ export default async function CoachPlayersPage() {
                 id={player.id}
                 name={player.full_name}
                 avatarUrl={player.avatar_url}
+                gender={playerProfile?.gender}
                 grade={playerProfile?.current_grade ?? 'Unassessed'}
                 archetype={playerProfile?.current_archetype ?? 'Unassessed'}
                 totalSessions={playerProfile?.total_sessions ?? 0}

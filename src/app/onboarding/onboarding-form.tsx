@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { completeOnboarding } from '@/app/actions/player-actions'
-import type { ExperienceLevel, PlayingFrequency } from '@/types/database'
+import type { ExperienceLevel, PlayingFrequency, Gender } from '@/types/database'
 
 const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string }[] = [
   { value: 'never_played', label: 'Never Played' },
@@ -31,6 +31,7 @@ const RACKET_SPORTS = ['Tennis', 'Badminton', 'Squash', 'Table Tennis', 'Other']
 
 export function OnboardingForm() {
   const [step, setStep] = useState(1)
+  const [gender, setGender] = useState<Gender | ''>('')
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | ''>('')
   const [racketSports, setRacketSports] = useState<string[]>([])
   const [primaryGoals, setPrimaryGoals] = useState<string[]>([])
@@ -40,14 +41,15 @@ export function OnboardingForm() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const totalSteps = 4
+  const totalSteps = 5
 
   const canProceed = () => {
     switch (step) {
-      case 1: return experienceLevel !== ''
-      case 2: return primaryGoals.length > 0
-      case 3: return frequency !== ''
-      case 4: return true
+      case 1: return gender !== ''
+      case 2: return experienceLevel !== ''
+      case 3: return primaryGoals.length > 0
+      case 4: return frequency !== ''
+      case 5: return true
       default: return false
     }
   }
@@ -65,11 +67,12 @@ export function OnboardingForm() {
   }
 
   const handleSubmit = async () => {
-    if (!experienceLevel || primaryGoals.length === 0 || !frequency) return
+    if (!gender || !experienceLevel || primaryGoals.length === 0 || !frequency) return
     setLoading(true)
     setError(null)
 
     const result = await completeOnboarding({
+      gender,
       experience_level: experienceLevel,
       previous_racket_sport: racketSports.length > 0 ? racketSports.join(',') : undefined,
       primary_goal: primaryGoals.join(','),
@@ -107,8 +110,35 @@ export function OnboardingForm() {
         ))}
       </div>
 
-      {/* Step 1: Experience + Racket Sports */}
+      {/* Step 1: Gender */}
       {step === 1 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Gender</h2>
+          <p className="text-sm text-muted-foreground">Pilih gender kamu</p>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { value: 'male' as Gender, label: 'Male' },
+              { value: 'female' as Gender, label: 'Female' },
+            ]).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setGender(opt.value)}
+                className={`p-4 rounded-lg border-2 text-center text-sm font-medium transition-colors min-h-[44px] ${
+                  gender === opt.value
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover:border-muted-foreground'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Experience + Racket Sports */}
+      {step === 2 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Your Padel Experience</h2>
           <p className="text-sm text-muted-foreground">How would you describe your padel experience?</p>
@@ -156,8 +186,8 @@ export function OnboardingForm() {
         </div>
       )}
 
-      {/* Step 2: Goals (multi-select) */}
-      {step === 2 && (
+      {/* Step 3: Goals (multi-select) */}
+      {step === 3 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Your Goals</h2>
           <p className="text-sm text-muted-foreground">What do you want to achieve? (pilih semua yang sesuai)</p>
@@ -180,8 +210,8 @@ export function OnboardingForm() {
         </div>
       )}
 
-      {/* Step 3: Frequency */}
-      {step === 3 && (
+      {/* Step 4: Frequency */}
+      {step === 4 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Playing Frequency</h2>
           <p className="text-sm text-muted-foreground">How often do you want to play?</p>
@@ -204,8 +234,8 @@ export function OnboardingForm() {
         </div>
       )}
 
-      {/* Step 4: Fears/Concerns */}
-      {step === 4 && (
+      {/* Step 5: Fears/Concerns */}
+      {step === 5 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Anything We Should Know?</h2>
           <p className="text-sm text-muted-foreground">

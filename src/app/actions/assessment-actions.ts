@@ -34,6 +34,12 @@ export async function createAssessment(input: CreateAssessmentInput & {
       return { error: 'All scores must be integers between 1 and 10' }
     }
 
+    // Delete existing assessments for this player (keep only latest)
+    await supabase
+      .from('assessments')
+      .delete()
+      .eq('player_id', input.player_id)
+
     // Insert assessment
     const { data, error } = await supabase
       .from('assessments')

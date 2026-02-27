@@ -9,6 +9,8 @@
 
 export type UserRole = 'admin' | 'coach' | 'player'
 
+export type Gender = 'male' | 'female'
+
 export type ExperienceLevel = 'never_played' | 'tried_once' | 'play_sometimes' | 'play_regularly'
 
 export type PrimaryGoal = 'learn_basics' | 'improve_technique' | 'competitive_play' | 'fitness' | 'social_fun'
@@ -80,6 +82,7 @@ export interface Profile {
 export interface PlayerProfile {
   id: string
   player_id: string
+  gender: Gender | null
   experience_level: ExperienceLevel | null
   previous_racket_sport: string | null
   primary_goal: string | null
@@ -117,6 +120,7 @@ export interface Session {
   courts_booked: number | null
   duration_hours: number
   reclub_url: string | null
+  selected_modules: string[] | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -163,6 +167,7 @@ export interface ModuleRecord {
   module_id: string
   module_score: number | null
   drills_completed: string[] | null
+  drill_scores: Record<string, number> | null
   status: ModuleStatus
   notes: string | null
   created_at: string
@@ -235,6 +240,7 @@ export interface CreateAssessmentInput extends AssessmentScoresInput {
 }
 
 export interface OnboardingInput {
+  gender: Gender
   experience_level: ExperienceLevel
   previous_racket_sport?: string
   primary_goal: string
@@ -250,6 +256,7 @@ export interface RecordModuleInput {
   module_id: string
   module_score?: number
   drills_completed?: string[]
+  drill_scores?: Record<string, number>
   status: ModuleStatus
   notes?: string
 }
