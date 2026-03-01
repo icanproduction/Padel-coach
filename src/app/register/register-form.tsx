@@ -43,7 +43,7 @@ export function RegisterForm() {
     if (role === 'player') {
       router.push('/onboarding')
     } else {
-      router.push('/coach')
+      router.push('/pending-approval')
     }
     router.refresh()
   }

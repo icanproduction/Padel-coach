@@ -37,6 +37,7 @@ export async function middleware(request: NextRequest) {
   // Public routes
   const isAuthPage = pathname === '/login' || pathname === '/register'
   const isOnboardingPage = pathname === '/onboarding'
+  const isPendingApprovalPage = pathname === '/pending-approval'
   const isPublicPage = pathname === '/'
 
   // Protected routes
@@ -47,32 +48,50 @@ export async function middleware(request: NextRequest) {
   const isProtected = isAdminPage || isCoachPage || isPlayerPage || isProfilePage
 
   // Not logged in → redirect to login
-  if (!user && (isProtected || isOnboardingPage)) {
+  if (!user && (isProtected || isOnboardingPage || isPendingApprovalPage)) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirectedFrom', pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Logged in → redirect from auth pages to dashboard
-  if (user && isAuthPage) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  // Logged in → check coach approval + redirect from auth pages
+  if (user) {
+    // Coach accessing /coach/* → check if approved
+    if (isCoachPage) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_approved')
+        .eq('id', user.id)
+        .single()
 
-    const redirectUrl = request.nextUrl.clone()
-    if (profile?.role === 'admin') {
-      redirectUrl.pathname = '/admin'
-    } else if (profile?.role === 'coach') {
-      redirectUrl.pathname = '/coach'
-    } else if (profile?.role === 'player') {
-      redirectUrl.pathname = '/player'
-    } else {
-      redirectUrl.pathname = '/'
+      if (profile?.role === 'coach' && !profile.is_approved) {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = '/pending-approval'
+        return NextResponse.redirect(redirectUrl)
+      }
     }
-    return NextResponse.redirect(redirectUrl)
+
+    // Redirect from auth pages to dashboard
+    if (isAuthPage) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_approved')
+        .eq('id', user.id)
+        .single()
+
+      const redirectUrl = request.nextUrl.clone()
+      if (profile?.role === 'admin') {
+        redirectUrl.pathname = '/admin'
+      } else if (profile?.role === 'coach') {
+        redirectUrl.pathname = profile.is_approved ? '/coach' : '/pending-approval'
+      } else if (profile?.role === 'player') {
+        redirectUrl.pathname = '/player'
+      } else {
+        redirectUrl.pathname = '/'
+      }
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   return supabaseResponse

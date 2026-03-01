@@ -236,6 +236,12 @@ export async function createCoach(input: {
     if (authError) return { error: authError.message }
     if (!authData.user) return { error: 'Failed to create coach' }
 
+    // Admin-created coaches are auto-approved
+    await supabase
+      .from('profiles')
+      .update({ is_approved: true })
+      .eq('id', authData.user.id)
+
     revalidatePath('/admin/coaches')
     return { data: { userId: authData.user.id } }
   } catch {
@@ -259,5 +265,36 @@ export async function getAllCoaches() {
     return { data }
   } catch {
     return { error: 'Failed to fetch coaches' }
+  }
+}
+
+export async function approveCoach(coachId: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admin can approve coaches' }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_approved: true })
+      .eq('id', coachId)
+      .eq('role', 'coach')
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/coaches')
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to approve coach' }
   }
 }

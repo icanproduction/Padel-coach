@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   phone TEXT,
   date_of_birth DATE,
   role TEXT NOT NULL CHECK (role IN ('admin', 'coach', 'player')),
+  is_approved BOOLEAN DEFAULT TRUE,
   avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -190,15 +191,20 @@ CREATE TRIGGER sessions_updated_at
 
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  user_role TEXT;
 BEGIN
-  INSERT INTO public.profiles (id, full_name, email, phone, role, username)
+  user_role := COALESCE(NEW.raw_user_meta_data->>'role', 'player');
+
+  INSERT INTO public.profiles (id, full_name, email, phone, role, username, is_approved)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'New User'),
     NEW.email,
     NEW.raw_user_meta_data->>'phone',
-    COALESCE(NEW.raw_user_meta_data->>'role', 'player'),
-    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1))
+    user_role,
+    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    CASE WHEN user_role = 'coach' THEN FALSE ELSE TRUE END
   );
 
   IF COALESCE(NEW.raw_user_meta_data->>'role', 'player') = 'player' THEN

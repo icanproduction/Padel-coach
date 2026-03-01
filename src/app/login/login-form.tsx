@@ -29,17 +29,19 @@ export function LoginForm() {
 
       if (signInError) throw signInError
 
-      // Get user role to redirect
+      // Get user role + approval status to redirect
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, is_approved')
         .eq('id', data.user.id)
         .single()
 
       if (!profile) throw new Error('Profile not found')
 
       if (profile.role === 'admin') router.push('/admin')
-      else if (profile.role === 'coach') router.push('/coach')
+      else if (profile.role === 'coach') {
+        router.push(profile.is_approved ? '/coach' : '/pending-approval')
+      }
       else if (profile.role === 'player') router.push('/player')
 
       router.refresh()

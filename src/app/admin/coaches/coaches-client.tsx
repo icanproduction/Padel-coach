@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createCoach } from '@/app/actions/player-actions'
+import { createCoach, approveCoach } from '@/app/actions/player-actions'
 import type { Profile } from '@/types/database'
-import { Plus, X, Loader2, Mail, Phone, UserCheck, User, AtSign } from 'lucide-react'
+import { Plus, X, Loader2, Mail, Phone, UserCheck, User, AtSign, CheckCircle2 } from 'lucide-react'
 
 interface CoachesClientProps {
   coaches: Profile[]
@@ -15,6 +15,7 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
   const [isPending, startTransition] = useTransition()
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [approvingId, setApprovingId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -61,6 +62,21 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
     })
   }
 
+  function handleApprove(coachId: string) {
+    setApprovingId(coachId)
+    startTransition(async () => {
+      await approveCoach(coachId)
+      setApprovingId(null)
+      router.refresh()
+    })
+  }
+
+  // Sort: pending first, then active
+  const sortedCoaches = [...coaches].sort((a, b) => {
+    if (a.is_approved === b.is_approved) return 0
+    return a.is_approved ? 1 : -1
+  })
+
   return (
     <>
       {/* Add Coach button */}
@@ -76,9 +92,9 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
       </button>
 
       {/* Coach list */}
-      {coaches.length > 0 ? (
+      {sortedCoaches.length > 0 ? (
         <div className="space-y-3 mt-6">
-          {coaches.map((coach) => {
+          {sortedCoaches.map((coach) => {
             const initials = coach.full_name
               .split(' ')
               .map((n) => n[0])
@@ -92,7 +108,11 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
                 className="bg-card rounded-xl border border-border p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 ${
+                    coach.is_approved
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                  }`}>
                     {coach.avatar_url ? (
                       <img
                         src={coach.avatar_url}
@@ -104,9 +124,18 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">
-                      {coach.full_name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-sm truncate">
+                        {coach.full_name}
+                      </h3>
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                        coach.is_approved
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {coach.is_approved ? 'Active' : 'Pending'}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
                       <Mail className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">{coach.email}</span>
@@ -127,6 +156,24 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
                     </p>
                   </div>
                 </div>
+
+                {/* Approve button for pending coaches */}
+                {!coach.is_approved && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <button
+                      onClick={() => handleApprove(coach.id)}
+                      disabled={isPending}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    >
+                      {approvingId === coach.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      )}
+                      Approve
+                    </button>
+                  </div>
+                )}
               </div>
             )
           })}

@@ -74,6 +74,7 @@ export interface Profile {
   phone: string | null
   date_of_birth: string | null
   role: UserRole
+  is_approved: boolean
   avatar_url: string | null
   created_at: string
   updated_at: string
