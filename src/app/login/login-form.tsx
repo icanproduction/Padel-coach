@@ -101,13 +101,6 @@ export function LoginForm() {
       >
         {loading ? 'Signing in...' : 'Sign in'}
       </button>
-
-      <div className="text-center text-xs text-muted-foreground space-y-1">
-        <p className="font-medium">Test accounts:</p>
-        <p>admin / password123</p>
-        <p>coach / password123</p>
-        <p>player / password123</p>
-      </div>
     </form>
   )
 }
