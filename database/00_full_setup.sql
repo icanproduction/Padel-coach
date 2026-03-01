@@ -257,6 +257,28 @@ CREATE POLICY "allow_all" ON locations
 CREATE POLICY "anon_read_locations" ON locations
   FOR SELECT TO anon USING (true);
 
+-- =====================================================
+-- 8. COACH NOTES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS coach_notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  coach_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  note TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_coach_notes_player ON coach_notes(player_id);
+
+ALTER TABLE coach_notes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all" ON coach_notes
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Also allow anon to read sessions (for public session page)
+CREATE POLICY "anon_read_sessions" ON sessions
+  FOR SELECT TO anon USING (true);
+
 COMMIT;
 
 -- Reload schema cache

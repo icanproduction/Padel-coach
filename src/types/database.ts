@@ -175,6 +175,14 @@ export interface ModuleRecord {
   created_at: string
 }
 
+export interface CoachNote {
+  id: string
+  player_id: string
+  coach_id: string
+  note: string
+  created_at: string
+}
+
 // =====================================================
 // JOINED / EXTENDED TYPES
 // =====================================================

@@ -1,10 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { SessionCard } from '@/components/features/session-card'
-import { CalendarDays } from 'lucide-react'
-import { SessionStatusActions } from './session-status-actions'
 import { CoachCreateSessionForm } from './create-session-form'
+import { SessionsView } from './sessions-view'
 import type { Location } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -36,15 +33,9 @@ export default async function CoachSessionsPage() {
       .order('name'),
   ])
 
-  const sessions = sessionsResult.data
+  const sessions = (sessionsResult.data ?? []) as any[]
   const error = sessionsResult.error
   const locations = (locationsResult.data as Location[]) ?? []
-
-  const allSessions = sessions ?? []
-  const upcomingSessions = allSessions.filter(
-    (s: any) => s.status === 'scheduled' || s.status === 'in_progress'
-  )
-  const completedSessions = allSessions.filter((s: any) => s.status === 'completed')
 
   return (
     <div className="space-y-6">
@@ -66,100 +57,8 @@ export default async function CoachSessionsPage() {
         </div>
       )}
 
-      {/* Upcoming / Active Sessions */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">
-          Upcoming & Active ({upcomingSessions.length})
-        </h2>
-
-        {upcomingSessions.length > 0 ? (
-          <div className="space-y-3">
-            {upcomingSessions.map((session: any) => {
-              const playerCount = session.session_players?.filter(
-                (p: any) => p.status === 'approved' || p.status === 'attended'
-              ).length ?? 0
-
-              return (
-                <Link key={session.id} href={`/coach/sessions/${session.id}`}>
-                  <SessionCard
-                    id={session.id}
-                    date={session.date}
-                    coachName={session.coach?.full_name ?? 'You'}
-                    sessionType={session.session_type}
-                    locationName={session.locations?.name}
-                    locationMapsLink={session.locations?.maps_link}
-                    courtsBooked={session.courts_booked}
-                    durationHours={session.duration_hours}
-                    reclubUrl={session.reclub_url}
-                    status={session.status}
-                    maxPlayers={session.max_players}
-                    playerCount={playerCount}
-                    notes={session.notes}
-                    actions={
-                      <SessionStatusActions
-                        sessionId={session.id}
-                        currentStatus={session.status}
-                      />
-                    }
-                  />
-                </Link>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-6 text-center">
-            <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No upcoming sessions</p>
-          </div>
-        )}
-      </div>
-
-      {/* Completed Sessions */}
-      {completedSessions.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">
-            Completed ({completedSessions.length})
-          </h2>
-          <div className="space-y-3">
-            {completedSessions.map((session: any) => {
-              const playerCount = session.session_players?.filter(
-                (p: any) => p.status === 'attended'
-              ).length ?? 0
-
-              return (
-                <Link key={session.id} href={`/coach/sessions/${session.id}`}>
-                  <SessionCard
-                    id={session.id}
-                    date={session.date}
-                    coachName={session.coach?.full_name ?? 'You'}
-                    sessionType={session.session_type}
-                    locationName={session.locations?.name}
-                    locationMapsLink={session.locations?.maps_link}
-                    courtsBooked={session.courts_booked}
-                    durationHours={session.duration_hours}
-                    reclubUrl={session.reclub_url}
-                    status={session.status}
-                    maxPlayers={session.max_players}
-                    playerCount={playerCount}
-                    notes={session.notes}
-                  />
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {allSessions.length === 0 && !error && (
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-medium mb-1">No sessions yet</p>
-          <p className="text-xs text-muted-foreground">
-            Tap &quot;New Session&quot; to create your first session.
-          </p>
-        </div>
-      )}
+      {/* Sessions List + Calendar Toggle */}
+      <SessionsView sessions={sessions} />
     </div>
   )
 }

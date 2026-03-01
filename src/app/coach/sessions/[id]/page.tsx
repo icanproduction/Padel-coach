@@ -11,6 +11,7 @@ import { SessionStatusActions } from '../session-status-actions'
 import { SessionCoachingWrapper } from './session-coaching-wrapper'
 import { SessionPlayerSlots } from './session-player-slots'
 import { ParticipantActions } from './participant-actions'
+import { ShareSessionButton } from './share-session-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +116,19 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
               currentStatus={session.status}
             />
           }
+        />
+      )}
+
+      {/* Share Button */}
+      {session.status !== 'completed' && (
+        <ShareSessionButton
+          sessionId={session.id}
+          date={session.date}
+          coachName={session.coach?.full_name ?? 'Coach'}
+          sessionType={session.session_type}
+          locationName={session.locations?.name}
+          maxPlayers={session.max_players}
+          playerCount={approvedPlayers.length + attendedPlayers.length}
         />
       )}
 

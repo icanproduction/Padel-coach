@@ -1,7 +1,9 @@
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getPlayerById } from '@/app/actions/player-actions'
 import { getPlayerAssessments } from '@/app/actions/assessment-actions'
 import { getPlayerModuleProgress } from '@/app/actions/module-actions'
 import { getPlayerSessions } from '@/app/actions/participant-actions'
+import { getPlayerNotes } from '@/app/actions/note-actions'
 import { GradeBadge } from '@/components/features/grade-badge'
 import { ArchetypeBadge } from '@/components/features/archetype-badge'
 import Link from 'next/link'
@@ -10,6 +12,7 @@ import { ArrowLeft, ClipboardList, CalendarDays } from 'lucide-react'
 import { SkillOverview } from './skill-overview'
 import { CurriculumProgress } from './curriculum-progress'
 import { SessionHistory } from './session-history'
+import { PlayerNotes } from './player-notes'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,12 +23,16 @@ interface PlayerDetailPageProps {
 export default async function PlayerDetailPage({ params }: PlayerDetailPageProps) {
   const { id } = await params
 
-  const [playerResult, assessmentsResult, moduleProgressResult, playerSessionsResult] =
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [playerResult, assessmentsResult, moduleProgressResult, playerSessionsResult, notesResult] =
     await Promise.all([
       getPlayerById(id),
       getPlayerAssessments(id),
       getPlayerModuleProgress(id),
       getPlayerSessions(id),
+      getPlayerNotes(id),
     ])
 
   if (playerResult.error || !playerResult.data) {
@@ -37,6 +44,8 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
   const moduleRecords = (moduleProgressResult.data ?? []) as any[]
   const playerSessions = ((playerSessionsResult.data ?? []) as any[])
     .filter((ps: any) => ps.session)
+  const notes = (notesResult.data ?? []) as any[]
+  const currentCoachId = user?.id ?? ''
 
   const playerProfile = Array.isArray(player.player_profiles)
     ? player.player_profiles[0]
@@ -160,6 +169,13 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
         playerSessions={playerSessions}
         assessments={assessments}
         moduleRecords={moduleRecords}
+      />
+
+      {/* Coach Notes */}
+      <PlayerNotes
+        playerId={id}
+        currentCoachId={currentCoachId}
+        notes={notes}
       />
     </div>
   )
