@@ -269,3 +269,73 @@ export async function approveCoach(coachId: string) {
     return { error: 'Failed to approve coach' }
   }
 }
+
+export async function unapproveCoach(coachId: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admin can manage coaches' }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_approved: false })
+      .eq('id', coachId)
+      .eq('role', 'coach')
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/coaches')
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to unapprove coach' }
+  }
+}
+
+export async function updateCoach(coachId: string, input: {
+  full_name: string
+  email: string
+  phone?: string
+}): Promise<{ data?: { success: boolean }; error?: string }> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admin can edit coaches' }
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: input.full_name.trim(),
+        email: input.email.toLowerCase().trim(),
+        phone: input.phone || null,
+      })
+      .eq('id', coachId)
+      .eq('role', 'coach')
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/coaches')
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to update coach' }
+  }
+}

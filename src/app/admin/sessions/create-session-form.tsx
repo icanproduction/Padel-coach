@@ -331,25 +331,7 @@ export function CreateSessionForm({ coaches, locations, onClose }: CreateSession
             </div>
           </section>
 
-          {/* Notes */}
-          <section>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
-              Notes <span className="font-normal normal-case">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.notes}
-              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-              placeholder={
-                isOpenPlay
-                  ? 'e.g. Bring own balls, Level 3+ only...'
-                  : 'Focus areas, instructions...'
-              }
-              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </section>
-
-          {/* Submit button — inline below notes */}
+          {/* Submit button — above notes */}
           <button
             type="submit"
             disabled={isPending}
@@ -358,6 +340,24 @@ export function CreateSessionForm({ coaches, locations, onClose }: CreateSession
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             {isPending ? 'Creating...' : 'Create Session'}
           </button>
+
+          {/* Notes */}
+          <section>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
+              Notes <span className="font-normal normal-case">(optional)</span>
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+              placeholder={
+                isOpenPlay
+                  ? 'e.g. Bring own balls, Level 3+ only...'
+                  : 'Focus areas, instructions...'
+              }
+              rows={6}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            />
+          </section>
         </div>
       </form>
     </div>
