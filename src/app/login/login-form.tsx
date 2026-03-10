@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-
-const EMAIL_DOMAIN = 'padel.local'
+import { loginUser } from '@/app/actions/auth-actions'
 
 export function LoginForm() {
   const [username, setUsername] = useState('')
@@ -12,7 +10,6 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,34 +17,24 @@ export function LoginForm() {
     setError(null)
 
     try {
-      const email = `${username.toLowerCase()}@${EMAIL_DOMAIN}`
+      const result = await loginUser({ username, password })
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (signInError) throw signInError
-
-      // Get user role + approval status to redirect
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, is_approved')
-        .eq('id', data.user.id)
-        .single()
-
-      if (!profile) throw new Error('Profile not found')
-
-      if (profile.role === 'admin') router.push('/admin')
-      else if (profile.role === 'coach') {
-        router.push(profile.is_approved ? '/coach' : '/pending-approval')
+      if (result.error) {
+        setError(result.error)
+        return
       }
-      else if (profile.role === 'player') router.push('/player')
+
+      const { role, isApproved } = result.data!
+
+      if (role === 'admin') router.push('/admin')
+      else if (role === 'coach') {
+        router.push(isApproved ? '/coach' : '/pending-approval')
+      }
+      else if (role === 'player') router.push('/player')
 
       router.refresh()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to sign in'
-      setError(message)
+    } catch {
+      setError('Gagal login')
     } finally {
       setLoading(false)
     }

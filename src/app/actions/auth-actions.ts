@@ -1,11 +1,46 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import type { Profile } from '@/types/database'
 
-const EMAIL_DOMAIN = 'padel.local'
+const EMAIL_DOMAIN = 'padel.app'
+
+export async function loginUser(input: {
+  username: string
+  password: string
+}): Promise<{ data?: { role: string; isApproved: boolean }; error?: string }> {
+  try {
+    const username = input.username.toLowerCase().trim()
+    const email = `${username}@${EMAIL_DOMAIN}`
+
+    const supabase = await createServerSupabaseClient()
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password: input.password,
+    })
+
+    if (signInError) {
+      if (signInError.message.includes('Invalid login')) {
+        return { error: 'Username atau password salah' }
+      }
+      return { error: signInError.message }
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_approved')
+      .eq('id', data.user.id)
+      .single()
+
+    if (!profile) return { error: 'Profile tidak ditemukan' }
+
+    return { data: { role: profile.role, isApproved: profile.is_approved ?? true } }
+  } catch {
+    return { error: 'Gagal login' }
+  }
+}
 
 export async function logout() {
   const supabase = await createServerSupabaseClient()
@@ -46,30 +81,30 @@ export async function registerUser(input: {
 }): Promise<{ data?: { userId: string }; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
+    const username = input.username.toLowerCase().trim()
 
     // Check username uniqueness
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
-      .eq('username', input.username.toLowerCase())
+      .eq('username', username)
       .single()
 
     if (existing) return { error: 'Username sudah dipakai' }
 
-    const email = `${input.username.toLowerCase()}@${EMAIL_DOMAIN}`
+    const email = `${username}@${EMAIL_DOMAIN}`
 
-    // Pass metadata - the database trigger (handle_new_user) will
-    // auto-create profiles and player_profiles rows
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Use service role client to bypass email validation & rate limits
+    const adminClient = createServiceRoleClient()
+    const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password: input.password,
-      options: {
-        data: {
-          full_name: input.full_name,
-          role: input.role,
-          phone: input.phone || null,
-          username: input.username.toLowerCase(),
-        },
+      email_confirm: true,
+      user_metadata: {
+        full_name: input.full_name,
+        role: input.role,
+        phone: input.phone || null,
+        username,
       },
     })
 

@@ -14,7 +14,7 @@ export async function GET() {
   const results: string[] = []
 
   for (const account of ACCOUNTS) {
-    const email = `${account.username}@padel.local`
+    const email = `${account.username}@padel.app`
 
     // Try to create user directly
     const { data, error } = await supabase.auth.admin.createUser({

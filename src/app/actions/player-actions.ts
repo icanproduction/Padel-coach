@@ -4,7 +4,7 @@ import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supab
 import { revalidatePath } from 'next/cache'
 import type { OnboardingInput, Gender } from '@/types/database'
 
-const EMAIL_DOMAIN = 'padel.local'
+const EMAIL_DOMAIN = 'padel.app'
 
 export async function createPlayer(input: {
   full_name: string

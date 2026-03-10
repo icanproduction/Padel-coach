@@ -3,7 +3,7 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-const EMAIL_DOMAIN = 'padel.local'
+const EMAIL_DOMAIN = 'padel.app'
 
 export async function updateProfile(input: {
   full_name: string

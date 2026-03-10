@@ -17,7 +17,7 @@ export async function GET() {
         'apikey': anonKey,
       },
       body: JSON.stringify({
-        email: 'admin@padel.local',
+        email: 'admin@padel.app',
         password: 'password123',
       }),
     })
@@ -87,7 +87,7 @@ export async function GET() {
         'apikey': anonKey,
       },
       body: JSON.stringify({
-        email: 'test-debug-123@padel.local',
+        email: 'test-debug-123@padel.app',
         password: 'test123456',
       }),
     })
