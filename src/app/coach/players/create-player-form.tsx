@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPlayer } from '@/app/actions/player-actions'
-import { ArrowLeft, Loader2, User, AtSign, Phone } from 'lucide-react'
+import { ArrowLeft, Loader2, User, Mail, Phone } from 'lucide-react'
 
 interface CreatePlayerFormProps {
   onClose: () => void
@@ -16,7 +16,7 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
 
   const [formData, setFormData] = useState({
     full_name: '',
-    username: '',
+    email: '',
     phone: '',
     gender: '' as 'male' | 'female' | '',
   })
@@ -29,12 +29,8 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
       setError('Nama harus diisi')
       return
     }
-    if (!formData.username.trim()) {
-      setError('Username harus diisi')
-      return
-    }
-    if (formData.username.includes('@') || formData.username.includes(' ')) {
-      setError('Username tidak boleh mengandung @ atau spasi')
+    if (!formData.email.trim()) {
+      setError('Email harus diisi')
       return
     }
     if (!formData.gender) {
@@ -45,7 +41,7 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
     startTransition(async () => {
       const result = await createPlayer({
         full_name: formData.full_name.trim(),
-        username: formData.username.trim(),
+        email: formData.email.trim(),
         phone: formData.phone || undefined,
         gender: formData.gender as 'male' | 'female',
       })
@@ -105,18 +101,18 @@ export function CreatePlayerForm({ onClose }: CreatePlayerFormProps) {
             </div>
           </section>
 
-          {/* Username */}
+          {/* Email */}
           <section>
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
-              Username
+              Email
             </label>
             <div className="relative">
-              <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-                placeholder="username"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                placeholder="email@example.com"
                 className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 required
                 autoCapitalize="none"

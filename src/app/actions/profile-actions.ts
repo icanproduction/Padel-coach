@@ -1,9 +1,7 @@
 'use server'
 
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-
-const EMAIL_DOMAIN = 'padel.app'
 
 export async function updateProfile(input: {
   full_name: string
@@ -57,22 +55,13 @@ export async function updateUsername(
 
     if (existing) return { error: 'Username sudah dipakai' }
 
-    // Update profiles table
+    // Update profiles table only (no longer syncing email)
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ username, email: `${username}@${EMAIL_DOMAIN}` })
+      .update({ username })
       .eq('id', user.id)
 
     if (profileError) return { error: profileError.message }
-
-    // Update auth.users email via service role client
-    const adminClient = createServiceRoleClient()
-    const { error: authError } = await adminClient.auth.admin.updateUserById(
-      user.id,
-      { email: `${username}@${EMAIL_DOMAIN}` }
-    )
-
-    if (authError) return { error: authError.message }
 
     revalidatePath('/profile')
     return { data: { success: true } }

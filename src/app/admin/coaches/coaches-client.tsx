@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createCoach, approveCoach } from '@/app/actions/player-actions'
 import type { Profile } from '@/types/database'
-import { Plus, X, Loader2, Mail, Phone, UserCheck, User, AtSign, CheckCircle2 } from 'lucide-react'
+import { Plus, X, Loader2, Mail, Phone, UserCheck, User, CheckCircle2 } from 'lucide-react'
 
 interface CoachesClientProps {
   coaches: Profile[]
@@ -19,12 +19,12 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
 
   const [formData, setFormData] = useState({
     full_name: '',
-    username: '',
+    email: '',
     phone: '',
   })
 
   function resetForm() {
-    setFormData({ full_name: '', username: '', phone: '' })
+    setFormData({ full_name: '', email: '', phone: '' })
     setError(null)
   }
 
@@ -36,19 +36,15 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
       setError('Nama harus diisi')
       return
     }
-    if (!formData.username.trim()) {
-      setError('Username harus diisi')
-      return
-    }
-    if (formData.username.includes('@') || formData.username.includes(' ')) {
-      setError('Username tidak boleh mengandung @ atau spasi')
+    if (!formData.email.trim()) {
+      setError('Email harus diisi')
       return
     }
 
     startTransition(async () => {
       const result = await createCoach({
         full_name: formData.full_name.trim(),
-        username: formData.username.trim(),
+        email: formData.email.trim(),
         phone: formData.phone || undefined,
       })
 
@@ -236,16 +232,16 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
                   </div>
                 </div>
 
-                {/* Username */}
+                {/* Email */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">Username</label>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1.5">Email</label>
                   <div className="relative">
-                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
-                      type="text"
-                      value={formData.username}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-                      placeholder="username"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                      placeholder="email@example.com"
                       className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                       autoCapitalize="none"

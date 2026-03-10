@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { loginUser } from '@/app/actions/auth-actions'
 
 export function LoginForm() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +17,7 @@ export function LoginForm() {
     setError(null)
 
     try {
-      const result = await loginUser({ username, password })
+      const result = await loginUser({ email, password })
 
       if (result.error) {
         setError(result.error)
@@ -50,17 +50,17 @@ export function LoginForm() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1.5">
-            Username
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
+            Email
           </label>
           <input
-            id="username"
-            type="text"
+            id="email"
+            type="email"
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="username"
+            placeholder="email@example.com"
             autoCapitalize="none"
             autoCorrect="off"
           />

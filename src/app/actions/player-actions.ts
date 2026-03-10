@@ -4,11 +4,9 @@ import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supab
 import { revalidatePath } from 'next/cache'
 import type { OnboardingInput, Gender } from '@/types/database'
 
-const EMAIL_DOMAIN = 'padel.app'
-
 export async function createPlayer(input: {
   full_name: string
-  username: string
+  email: string
   phone?: string
   gender: Gender
 }): Promise<{ data?: { userId: string }; error?: string }> {
@@ -28,31 +26,17 @@ export async function createPlayer(input: {
       return { error: 'Unauthorized' }
     }
 
-    const username = input.username.toLowerCase().trim()
-
-    if (!username || username.includes('@') || username.includes(' ')) {
-      return { error: 'Username tidak valid' }
-    }
-
-    // Check username uniqueness
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username)
-      .single()
-
-    if (existing) return { error: 'Username sudah dipakai' }
+    const email = input.email.toLowerCase().trim()
 
     // Create user via service role client (bypasses email confirmation)
     const adminClient = createServiceRoleClient()
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
-      email: `${username}@${EMAIL_DOMAIN}`,
+      email,
       password: '123456',
       email_confirm: true,
       user_metadata: {
         full_name: input.full_name,
         role: 'player',
-        username,
         phone: input.phone || null,
       },
     })
@@ -188,7 +172,7 @@ export async function completeOnboarding(input: OnboardingInput) {
 
 export async function createCoach(input: {
   full_name: string
-  username: string
+  email: string
   phone?: string
 }): Promise<{ data?: { userId: string }; error?: string }> {
   try {
@@ -206,29 +190,16 @@ export async function createCoach(input: {
       return { error: 'Only admin can create coaches' }
     }
 
-    const username = input.username.toLowerCase().trim()
-
-    if (!username || username.includes('@') || username.includes(' ')) {
-      return { error: 'Username tidak valid' }
-    }
-
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username)
-      .single()
-
-    if (existing) return { error: 'Username sudah dipakai' }
+    const email = input.email.toLowerCase().trim()
 
     const adminClient = createServiceRoleClient()
     const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
-      email: `${username}@${EMAIL_DOMAIN}`,
+      email,
       password: '123456',
       email_confirm: true,
       user_metadata: {
         full_name: input.full_name,
         role: 'coach',
-        username,
         phone: input.phone || null,
       },
     })

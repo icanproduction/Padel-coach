@@ -5,15 +5,12 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import type { Profile } from '@/types/database'
 
-const EMAIL_DOMAIN = 'padel.app'
-
 export async function loginUser(input: {
-  username: string
+  email: string
   password: string
 }): Promise<{ data?: { role: string; isApproved: boolean }; error?: string }> {
   try {
-    const username = input.username.toLowerCase().trim()
-    const email = `${username}@${EMAIL_DOMAIN}`
+    const email = input.email.toLowerCase().trim()
 
     const supabase = await createServerSupabaseClient()
     const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -23,7 +20,7 @@ export async function loginUser(input: {
 
     if (signInError) {
       if (signInError.message.includes('Invalid login')) {
-        return { error: 'Username atau password salah' }
+        return { error: 'Email atau password salah' }
       }
       return { error: signInError.message }
     }
@@ -73,7 +70,7 @@ export async function getCurrentUser(): Promise<{
 }
 
 export async function registerUser(input: {
-  username: string
+  email: string
   password: string
   full_name: string
   role: 'coach' | 'player'
@@ -81,18 +78,7 @@ export async function registerUser(input: {
 }): Promise<{ data?: { userId: string }; error?: string }> {
   try {
     const supabase = await createServerSupabaseClient()
-    const username = input.username.toLowerCase().trim()
-
-    // Check username uniqueness
-    const { data: existing } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', username)
-      .single()
-
-    if (existing) return { error: 'Username sudah dipakai' }
-
-    const email = `${username}@${EMAIL_DOMAIN}`
+    const email = input.email.toLowerCase().trim()
 
     // Use service role client to bypass email validation & rate limits
     const adminClient = createServiceRoleClient()
@@ -104,7 +90,6 @@ export async function registerUser(input: {
         full_name: input.full_name,
         role: input.role,
         phone: input.phone || null,
-        username,
       },
     })
 
