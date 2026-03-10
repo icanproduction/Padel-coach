@@ -19,7 +19,7 @@ export default async function CoachLayout({
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.role !== 'coach') redirect('/login')
+  if (!profile || (profile.role !== 'coach' && profile.role !== 'admin')) redirect('/login')
 
   return (
     <DashboardLayout user={profile as Profile} role="coach">

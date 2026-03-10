@@ -34,8 +34,8 @@ export async function addPlayerNote(playerId: string, note: string) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'coach') {
-      return { error: 'Only coaches can add notes' }
+    if (!profile || (profile.role !== 'coach' && profile.role !== 'admin')) {
+      return { error: 'Only coaches and admins can add notes' }
     }
 
     const { error } = await supabase
