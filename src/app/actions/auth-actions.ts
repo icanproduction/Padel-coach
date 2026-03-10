@@ -111,6 +111,14 @@ export async function registerUser(input: {
     if (authError) return { error: authError.message }
     if (!authData.user) return { error: 'Registration failed' }
 
+    // Auto sign in after creating user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password: input.password,
+    })
+
+    if (signInError) return { error: signInError.message }
+
     return { data: { userId: authData.user.id } }
   } catch {
     return { error: 'Registration failed' }
