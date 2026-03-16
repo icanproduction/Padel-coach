@@ -1,16 +1,30 @@
 import Link from 'next/link'
 import { TrendingUp, ClipboardCheck, Users, BarChart3 } from 'lucide-react'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createServerSupabaseClient()
+  const { data: logoSetting } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'logo_url')
+    .single()
+
+  const logoUrl = logoSetting?.value ?? null
+
   return (
     <main className="min-h-screen bg-[#1a1f36]">
       {/* Hero */}
       <div className="flex flex-col items-center justify-center px-6 pt-20 pb-16">
-        <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6">
-          <span className="text-2xl font-bold text-primary-foreground">L</span>
-        </div>
+        {logoUrl ? (
+          <img src={logoUrl} alt="Loop Padel Club" className="h-20 w-auto object-contain mb-6" />
+        ) : (
+          <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6">
+            <span className="text-2xl font-bold text-primary-foreground">L</span>
+          </div>
+        )}
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
           Loop Padel Club
         </h1>
