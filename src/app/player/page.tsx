@@ -6,7 +6,7 @@ import { ArchetypeBadge } from '@/components/features/archetype-badge'
 import { AssessmentRadarChart } from '@/components/features/radar-chart'
 import { OpenPlayReadiness } from '@/components/features/open-play-readiness'
 import { ASSESSMENT_PARAMETERS } from '@/types/database'
-import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList, Calendar, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -57,6 +57,26 @@ export default async function PlayerDashboard() {
     .limit(1)
     .maybeSingle()
 
+  // Get next upcoming session
+  const today = new Date().toISOString().split('T')[0]
+  const { data: nextSession } = await supabase
+    .from('session_players')
+    .select(`
+      session:sessions(
+        id, date, session_type,
+        coach:profiles!sessions_coach_id_fkey(full_name)
+      )
+    `)
+    .eq('player_id', user.id)
+    .in('status', ['approved', 'pending'])
+    .limit(10)
+
+  // Filter for future sessions and pick the earliest
+  const upcomingSession = nextSession
+    ?.map((r) => r.session as unknown as { id: string; date: string; session_type: string; coach: { full_name: string } | null })
+    ?.filter((s) => s && s.date >= today)
+    ?.sort((a, b) => a.date.localeCompare(b.date))?.[0] ?? null
+
   const currentGrade = playerProfile?.current_grade || 'Unassessed'
   const currentArchetype = playerProfile?.current_archetype || 'Unassessed'
   const totalSessions = playerProfile?.total_sessions || 0
@@ -81,17 +101,50 @@ export default async function PlayerDashboard() {
       {/* Greeting Banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 text-primary-foreground">
         <div className="relative z-10">
-          <p className="text-sm font-medium opacity-90">{greeting},</p>
-          <h1 className="text-2xl font-bold mt-0.5">{firstName}</h1>
-          <p className="text-sm opacity-80 mt-2">
-            {latestAssessment
-              ? `Grade kamu: ${currentGrade} · Average: ${averageScore.toFixed(1)}/10`
-              : 'Belum ada assessment. Join session untuk mulai!'}
-          </p>
+          <p className="text-sm font-medium opacity-90">{greeting}</p>
+          <h1 className="text-2xl font-bold mt-0.5">{firstName}!</h1>
+
+          {/* Grade & Archetype Badges */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+              {currentGrade}
+            </span>
+            <span className="bg-white/10 backdrop-blur-sm text-white/90 text-xs font-medium px-3 py-1 rounded-full">
+              {currentArchetype}
+            </span>
+          </div>
+
+          {/* Next Session Card */}
+          {upcomingSession && (
+            <div className="mt-4 bg-white/15 backdrop-blur-sm rounded-xl p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider opacity-80 mb-1.5">Next Session</p>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 opacity-80" />
+                <span className="text-sm font-semibold">
+                  {new Date(upcomingSession.date).toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                  {' · '}
+                  {new Date(upcomingSession.date).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+              {upcomingSession.coach && (
+                <p className="text-xs opacity-80 mt-1 ml-6">
+                  Coach {upcomingSession.coach.full_name}
+                </p>
+              )}
+            </div>
+          )}
         </div>
         {/* Decorative circles */}
-        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
-        <div className="absolute -bottom-4 -right-2 w-16 h-16 rounded-full bg-white/5" />
+        <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
+        <div className="absolute -bottom-4 -right-2 w-20 h-20 rounded-full bg-white/5" />
+        <div className="absolute top-1/2 -right-10 w-32 h-32 rounded-full bg-white/5" />
       </div>
 
       {/* Current Status Card */}

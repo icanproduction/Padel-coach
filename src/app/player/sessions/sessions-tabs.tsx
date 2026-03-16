@@ -36,30 +36,34 @@ export function SessionsTabs({ availableSessions, upcomingSessions, pastSessions
     <div className="space-y-4">
       {/* Tab Bar */}
       <div className="flex bg-muted rounded-xl p-1 gap-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              'flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
-              activeTab === tab.key
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <span>{tab.label}</span>
-            {tab.count > 0 && (
-              <span className={cn(
-                'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                 activeTab === tab.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted-foreground/20 text-muted-foreground'
-              )}>
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+              {tab.count > 0 && (
+                <span className={cn(
+                  'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center',
+                  activeTab === tab.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted-foreground/20 text-muted-foreground'
+                )}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* Tab Content */}
