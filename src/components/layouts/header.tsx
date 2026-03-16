@@ -34,12 +34,12 @@ export function Header({ user, logoUrl }: HeaderProps) {
         )}
       </div>
 
-      {/* Right: bell + avatar → profile */}
-      <div className="flex items-center gap-1">
+      {/* Right: bell + avatar */}
+      <div className="flex items-center gap-2">
         <NotificationBell />
-        <Link href="/profile" className="flex items-center gap-2 pl-1">
-          <span className="text-sm font-medium">{user.full_name}</span>
-          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+        <Link href="/profile" className="flex items-center gap-2">
+          <span className="text-sm font-medium hidden sm:inline">{user.full_name}</span>
+          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium flex-shrink-0">
             {user.avatar_url ? (
               <img
                 src={user.avatar_url}
