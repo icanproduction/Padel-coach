@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Loop Padel Club',
   description: 'Player development system - Diagnostic, Prescription & Progress tracking for padel coaching',
-  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

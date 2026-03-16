@@ -27,6 +27,7 @@ export default async function AdminSettingsPage() {
       <SettingsForm
         appName={settings.app_name ?? 'Loop Padel Club'}
         logoUrl={settings.logo_url ?? null}
+        pwaIconUrl={settings.pwa_icon_url ?? null}
       />
     </div>
   )
