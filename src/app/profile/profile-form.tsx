@@ -19,6 +19,7 @@ import {
   Shield,
 } from 'lucide-react'
 import type { Profile, PlayerProfile } from '@/types/database'
+import { NotificationToggle } from '@/components/features/notification-prompt'
 
 interface ProfileFormProps {
   profile: Profile
@@ -288,6 +289,9 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
           'Save Changes'
         )}
       </button>
+
+      {/* Notification Toggle */}
+      <NotificationToggle />
 
       {/* Logout Button */}
       <form action={logout}>

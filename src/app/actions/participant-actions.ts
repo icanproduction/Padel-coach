@@ -141,6 +141,20 @@ export async function updateParticipantStatus(
 
     if (error) return { error: error.message }
 
+    // Send push notification to player when approved
+    if (status === 'approved') {
+      try {
+        const { sendPushToUser } = await import('@/lib/push')
+        await sendPushToUser(playerId, {
+          title: 'Request Approved!',
+          body: 'Kamu sudah di-approve untuk join session. See you there!',
+          url: '/player/sessions',
+        })
+      } catch {
+        // Push notification failure should not block status update
+      }
+    }
+
     revalidatePath(`/coach/sessions/${sessionId}`)
     revalidatePath('/player/sessions')
     return { data: { success: true } }

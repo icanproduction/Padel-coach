@@ -39,6 +39,21 @@ export async function createSession(input: CreateSessionInput) {
 
     if (error) return { error: error.message }
 
+    // Send push notification to all players about new session
+    try {
+      const { sendPushToRole } = await import('@/lib/push')
+      const sessionDate = new Date(input.date).toLocaleDateString('id-ID', {
+        weekday: 'short', day: 'numeric', month: 'short',
+      })
+      await sendPushToRole('player', {
+        title: 'Session Baru!',
+        body: `Ada session baru tanggal ${sessionDate}. Yuk join!`,
+        url: '/player/sessions',
+      })
+    } catch {
+      // Push notification failure should not block session creation
+    }
+
     revalidatePath('/admin/sessions')
     revalidatePath('/coach/sessions')
     revalidatePath('/player/sessions')

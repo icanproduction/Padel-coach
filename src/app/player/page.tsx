@@ -7,6 +7,7 @@ import { AssessmentRadarChart } from '@/components/features/radar-chart'
 import { OpenPlayReadiness } from '@/components/features/open-play-readiness'
 import { ASSESSMENT_PARAMETERS } from '@/types/database'
 import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList, Calendar, Clock } from 'lucide-react'
+import { NotificationPrompt } from '@/components/features/notification-prompt'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -146,6 +147,9 @@ export default async function PlayerDashboard() {
         <div className="absolute -bottom-4 -right-2 w-20 h-20 rounded-full bg-white/5" />
         <div className="absolute top-1/2 -right-10 w-32 h-32 rounded-full bg-white/5" />
       </div>
+
+      {/* Notification Prompt */}
+      <NotificationPrompt />
 
       {/* Current Status Card */}
       <div className="bg-card rounded-xl border border-border p-6">

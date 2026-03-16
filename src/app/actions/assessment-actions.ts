@@ -73,6 +73,18 @@ export async function createAssessment(input: CreateAssessmentInput & {
       })
       .eq('player_id', input.player_id)
 
+    // Notify player about new assessment
+    try {
+      const { sendPushToUser } = await import('@/lib/push')
+      await sendPushToUser(input.player_id, {
+        title: 'Assessment Baru!',
+        body: `Grade kamu: ${input.player_grade} · ${input.player_archetype}. Cek progress kamu sekarang!`,
+        url: '/player/progress',
+      })
+    } catch {
+      // Push notification failure should not block assessment creation
+    }
+
     revalidatePath('/coach/players')
     revalidatePath(`/coach/players/${input.player_id}`)
     revalidatePath('/player')
