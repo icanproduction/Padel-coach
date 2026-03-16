@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateSessionStatus } from '@/app/actions/session-actions'
+import { updateSessionStatus, deleteSession } from '@/app/actions/session-actions'
 import { updateParticipantStatus } from '@/app/actions/participant-actions'
 import type { SessionStatus, ParticipantStatus } from '@/types/database'
-import { Loader2, Play, CheckCircle, UserCheck, UserX } from 'lucide-react'
+import { Loader2, Play, CheckCircle, UserCheck, UserX, Trash2 } from 'lucide-react'
 
 interface SessionStatusButtonsProps {
   sessionId: string
@@ -69,8 +69,59 @@ export function SessionStatusButtons({ sessionId, currentStatus }: SessionStatus
             Session Completed
           </span>
         )}
+        <DeleteSessionButton sessionId={sessionId} />
       </div>
     </div>
+  )
+}
+
+function DeleteSessionButton({ sessionId }: { sessionId: string }) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [confirming, setConfirming] = useState(false)
+
+  function handleDelete() {
+    startTransition(async () => {
+      const result = await deleteSession(sessionId)
+      if (result.error) {
+        alert(result.error)
+        setConfirming(false)
+      } else {
+        router.push('/admin/sessions')
+      }
+    })
+  }
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleDelete}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50"
+        >
+          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          Ya, Hapus
+        </button>
+        <button
+          onClick={() => setConfirming(false)}
+          disabled={isPending}
+          className="px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-accent transition-colors"
+        >
+          Batal
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-destructive text-destructive hover:bg-destructive/10 transition-colors"
+    >
+      <Trash2 className="w-4 h-4" />
+      Hapus Session
+    </button>
   )
 }
 

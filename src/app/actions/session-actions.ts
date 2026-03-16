@@ -155,6 +155,51 @@ export async function getAllSessions(filters?: { status?: SessionStatus; coach_i
   }
 }
 
+export async function deleteSession(sessionId: string) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'coach')) {
+      return { error: 'Only admin or coach can delete sessions' }
+    }
+
+    // Delete session players first
+    await supabase
+      .from('session_players')
+      .delete()
+      .eq('session_id', sessionId)
+
+    // Delete session comments
+    await supabase
+      .from('session_comments')
+      .delete()
+      .eq('session_id', sessionId)
+
+    // Delete the session
+    const { error } = await supabase
+      .from('sessions')
+      .delete()
+      .eq('id', sessionId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/sessions')
+    revalidatePath('/coach/sessions')
+    revalidatePath('/player/sessions')
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to delete session' }
+  }
+}
+
 export async function saveSessionModules(sessionId: string, moduleIds: string[]) {
   try {
     const supabase = await createServerSupabaseClient()
