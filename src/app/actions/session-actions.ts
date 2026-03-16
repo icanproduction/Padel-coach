@@ -63,9 +63,45 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
 
     if (error) return { error: error.message }
 
+    // When session starts, auto-mark all approved players as attended
+    if (status === 'in_progress') {
+      // Get all approved players
+      const { data: approvedPlayers } = await supabase
+        .from('session_players')
+        .select('player_id')
+        .eq('session_id', sessionId)
+        .eq('status', 'approved')
+
+      if (approvedPlayers && approvedPlayers.length > 0) {
+        // Mark all as attended
+        await supabase
+          .from('session_players')
+          .update({ status: 'attended' })
+          .eq('session_id', sessionId)
+          .eq('status', 'approved')
+
+        // Increment total_sessions for each player
+        for (const p of approvedPlayers) {
+          const { data: playerProfile } = await supabase
+            .from('player_profiles')
+            .select('total_sessions')
+            .eq('player_id', p.player_id)
+            .single()
+
+          if (playerProfile) {
+            await supabase
+              .from('player_profiles')
+              .update({ total_sessions: (playerProfile.total_sessions || 0) + 1 })
+              .eq('player_id', p.player_id)
+          }
+        }
+      }
+    }
+
     revalidatePath('/admin/sessions')
     revalidatePath('/coach/sessions')
     revalidatePath(`/coach/sessions/${sessionId}`)
+    revalidatePath('/player/sessions')
     return { data }
   } catch {
     return { error: 'Failed to update session' }

@@ -54,9 +54,6 @@ export function SessionsView({ sessions }: SessionsViewProps) {
     : null
 
   function getPlayerCount(session: SessionData) {
-    if (session.status === 'completed') {
-      return session.session_players?.filter((p) => p.status === 'attended').length ?? 0
-    }
     return session.session_players?.filter(
       (p) => p.status === 'approved' || p.status === 'attended'
     ).length ?? 0

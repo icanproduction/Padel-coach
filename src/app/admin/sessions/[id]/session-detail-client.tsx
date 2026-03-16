@@ -116,19 +116,9 @@ export function PlayerStatusButtons({ sessionId, playerId, currentStatus }: Play
 
   if (currentStatus === 'approved') {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
-          Approved
-        </span>
-        <button
-          onClick={() => handleUpdate('attended')}
-          disabled={isPending}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-accent transition-colors disabled:opacity-50"
-        >
-          {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
-          Mark Attended
-        </button>
-      </div>
+      <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
+        Approved
+      </span>
     )
   }
 

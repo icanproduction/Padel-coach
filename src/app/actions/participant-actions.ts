@@ -141,22 +141,6 @@ export async function updateParticipantStatus(
 
     if (error) return { error: error.message }
 
-    // If attended, increment player total_sessions
-    if (status === 'attended') {
-      const { data: playerProfile } = await supabase
-        .from('player_profiles')
-        .select('total_sessions')
-        .eq('player_id', playerId)
-        .single()
-
-      if (playerProfile) {
-        await supabase
-          .from('player_profiles')
-          .update({ total_sessions: (playerProfile.total_sessions || 0) + 1 })
-          .eq('player_id', playerId)
-      }
-    }
-
     revalidatePath(`/coach/sessions/${sessionId}`)
     revalidatePath('/player/sessions')
     return { data: { success: true } }
