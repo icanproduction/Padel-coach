@@ -5,8 +5,7 @@ const withPWA = withPWAInit({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
   register: true,
-  customWorkerSrc: 'public',
-  customWorkerPrefix: 'custom',
+  customWorkerSrc: 'worker',
 })
 
 const nextConfig: NextConfig = {
