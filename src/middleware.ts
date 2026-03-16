@@ -72,8 +72,8 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Redirect from auth pages to dashboard
-    if (isAuthPage) {
+    // Redirect from auth pages or landing page to dashboard
+    if (isAuthPage || isPublicPage) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role, is_approved')
@@ -99,6 +99,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*|worker-.*|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
