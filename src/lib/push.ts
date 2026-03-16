@@ -16,10 +16,18 @@ interface PushPayload {
 }
 
 /**
- * Send push notification to a specific user
+ * Send push notification to a specific user + save in-app notification
  */
 export async function sendPushToUser(userId: string, payload: PushPayload) {
   const supabase = createServiceRoleClient()
+
+  // Save in-app notification
+  await supabase.from('notifications').insert({
+    user_id: userId,
+    title: payload.title,
+    body: payload.body,
+    url: payload.url || '/',
+  })
 
   const { data: subscriptions } = await supabase
     .from('push_subscriptions')

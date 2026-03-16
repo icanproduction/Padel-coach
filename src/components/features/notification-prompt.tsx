@@ -28,8 +28,8 @@ export function NotificationPrompt() {
     }
     setPermission(Notification.permission)
 
-    // Check if already dismissed this session
-    if (sessionStorage.getItem('notif-dismissed') === 'true') {
+    // Check if already dismissed (persists across sessions)
+    if (localStorage.getItem('notif-dismissed') === 'true') {
       setDismissed(true)
     }
   }, [])
@@ -86,7 +86,7 @@ export function NotificationPrompt() {
 
   function handleDismiss() {
     setDismissed(true)
-    sessionStorage.setItem('notif-dismissed', 'true')
+    localStorage.setItem('notif-dismissed', 'true')
   }
 
   // Don't show if unsupported, already granted, or denied, or dismissed

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SessionCard } from '@/components/features/session-card'
 import { Users, UserCheck, CalendarDays, Play, Plus, Eye } from 'lucide-react'
+import { NotificationPrompt } from '@/components/features/notification-prompt'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,6 +80,9 @@ export default async function AdminDashboard() {
           Overview of your padel coaching platform
         </p>
       </div>
+
+      {/* Notification Prompt */}
+      <NotificationPrompt />
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3">

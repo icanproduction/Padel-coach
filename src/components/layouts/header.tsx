@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { NotificationBell } from '@/components/features/notification-bell'
 import type { Profile } from '@/types/database'
 
 interface HeaderProps {
@@ -33,21 +34,24 @@ export function Header({ user, logoUrl }: HeaderProps) {
         )}
       </div>
 
-      {/* Right: avatar → profile */}
-      <Link href="/profile" className="flex items-center gap-2.5">
-        <span className="text-sm font-medium">{user.full_name}</span>
-        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-          {user.avatar_url ? (
-            <img
-              src={user.avatar_url}
-              alt={user.full_name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            initials
-          )}
-        </div>
-      </Link>
+      {/* Right: bell + avatar → profile */}
+      <div className="flex items-center gap-1">
+        <NotificationBell />
+        <Link href="/profile" className="flex items-center gap-2 pl-1">
+          <span className="text-sm font-medium">{user.full_name}</span>
+          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+            {user.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={user.full_name}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </div>
+        </Link>
+      </div>
     </header>
   )
 }
