@@ -1,8 +1,11 @@
 import { getSessionById } from '@/app/actions/session-actions'
 import { getSessionAssessments } from '@/app/actions/assessment-actions'
 import { getSessionModuleRecords } from '@/app/actions/coaching-actions'
+import { getSessionComments } from '@/app/actions/comment-actions'
 import { getAllPlayers } from '@/app/actions/player-actions'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SessionCard } from '@/components/features/session-card'
+import { SessionComments } from '@/components/features/session-comments'
 import { GradeBadge } from '@/components/features/grade-badge'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -12,6 +15,7 @@ import { SessionCoachingWrapper } from './session-coaching-wrapper'
 import { SessionPlayerSlots } from './session-player-slots'
 import { ParticipantActions } from './participant-actions'
 import { ShareSessionButton } from './share-session-button'
+import { CoachFeedbackForm } from './coach-feedback-form'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,11 +26,15 @@ interface SessionDetailPageProps {
 export default async function SessionDetailPage({ params }: SessionDetailPageProps) {
   const { id } = await params
 
-  const [sessionResult, assessmentsResult, playersResult, moduleRecordsResult] = await Promise.all([
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [sessionResult, assessmentsResult, playersResult, moduleRecordsResult, commentsResult] = await Promise.all([
     getSessionById(id),
     getSessionAssessments(id),
     getAllPlayers(),
     getSessionModuleRecords(id),
+    getSessionComments(id),
   ])
 
   if (sessionResult.error || !sessionResult.data) {
@@ -331,6 +339,34 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
             })()}
           </div>
         </div>
+      )}
+
+      {/* Coach Feedback per Player — shown when session completed or in_progress */}
+      {(session.status === 'completed' || session.status === 'in_progress') && activePlayers.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-4 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Player Feedback
+          </h2>
+          {[...approvedPlayers, ...attendedPlayers].map((sp: any) => (
+            <CoachFeedbackForm
+              key={sp.player_id}
+              sessionId={session.id}
+              playerId={sp.player_id}
+              playerName={sp.profiles?.full_name ?? 'Unknown'}
+              existingFeedback={sp.coach_feedback ?? null}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Session Comments */}
+      {user && (
+        <SessionComments
+          sessionId={session.id}
+          currentUserId={user.id}
+          currentUserRole="coach"
+          comments={commentsResult.data || []}
+        />
       )}
     </div>
   )

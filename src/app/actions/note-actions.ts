@@ -9,6 +9,17 @@ export async function getPlayerNotes(playerId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
+    // Only coaches and admins can view notes
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'coach' && profile.role !== 'admin')) {
+      return { error: 'Only coaches and admins can view notes' }
+    }
+
     const { data, error } = await supabase
       .from('coach_notes')
       .select('*, coach:profiles!coach_notes_coach_id_fkey(full_name)')

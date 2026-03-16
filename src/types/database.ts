@@ -136,6 +136,7 @@ export interface SessionPlayer {
   session_id: string
   player_id: string
   status: ParticipantStatus
+  coach_feedback: string | null
   joined_at: string
 }
 
@@ -181,6 +182,18 @@ export interface CoachNote {
   coach_id: string
   note: string
   created_at: string
+}
+
+export interface SessionComment {
+  id: string
+  session_id: string
+  author_id: string
+  message: string
+  created_at: string
+}
+
+export interface SessionCommentWithAuthor extends SessionComment {
+  author: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'role'>
 }
 
 // =====================================================

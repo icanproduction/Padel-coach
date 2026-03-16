@@ -185,6 +185,7 @@ export async function getSessionById(sessionId: string) {
           player_id,
           status,
           joined_at,
+          coach_feedback,
           profiles:profiles!session_players_player_id_fkey(id, full_name, email, avatar_url)
         ),
         locations(id, name, address, maps_link, courts)

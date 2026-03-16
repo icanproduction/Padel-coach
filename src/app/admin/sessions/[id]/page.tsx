@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getSessionComments } from '@/app/actions/comment-actions'
 import { SessionStatusButtons, PlayerStatusButtons } from './session-detail-client'
+import { SessionComments } from '@/components/features/session-comments'
 import {
   Calendar,
   Clock,
@@ -22,6 +24,9 @@ interface PageProps {
 export default async function AdminSessionDetailPage({ params }: PageProps) {
   const { id } = await params
   const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const commentsResult = await getSessionComments(id)
 
   const { data: session, error } = await supabase
     .from('sessions')
@@ -317,6 +322,16 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* Session Comments */}
+      {user && (
+        <SessionComments
+          sessionId={session.id}
+          currentUserId={user.id}
+          currentUserRole="admin"
+          comments={commentsResult.data || []}
+        />
+      )}
     </div>
   )
 }

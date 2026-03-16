@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { SessionCard } from '@/components/features/session-card'
 import { JoinButton } from './join-button'
 import { cn } from '@/lib/utils'
@@ -200,27 +201,28 @@ export default async function PlayerSessionsPage() {
               if (!session) return null
 
               return (
-                <SessionCard
-                  key={`past-${record.session_id}-${record.player_id}`}
-                  id={session.id}
-                  date={session.date}
-                  coachName={session.coach?.full_name || 'TBA'}
-                  sessionType={session.session_type}
-                  locationName={session.location}
-                  status={session.status}
-                  maxPlayers={session.max_players}
-                  notes={session.notes}
-                  actions={
-                    <span
-                      className={cn(
-                        'text-xs font-medium px-2.5 py-1 rounded-full capitalize',
-                        PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
-                      )}
-                    >
-                      {record.status}
-                    </span>
-                  }
-                />
+                <Link key={`past-${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
+                  <SessionCard
+                    id={session.id}
+                    date={session.date}
+                    coachName={session.coach?.full_name || 'TBA'}
+                    sessionType={session.session_type}
+                    locationName={session.location}
+                    status={session.status}
+                    maxPlayers={session.max_players}
+                    notes={session.notes}
+                    actions={
+                      <span
+                        className={cn(
+                          'text-xs font-medium px-2.5 py-1 rounded-full capitalize',
+                          PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
+                        )}
+                      >
+                        {record.status}
+                      </span>
+                    }
+                  />
+                </Link>
               )
             })}
           </div>
