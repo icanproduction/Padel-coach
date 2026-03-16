@@ -99,7 +99,7 @@ export function SessionComments({
       <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
         <MessageCircle className="w-4 h-4 text-muted-foreground" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Komentar ({comments.length})
+          Discussion Box ({comments.length})
         </h2>
       </div>
 
@@ -107,7 +107,7 @@ export function SessionComments({
       <div className="px-4 py-3 space-y-3 max-h-80 overflow-y-auto">
         {comments.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-4">
-            Belum ada komentar. Mulai percakapan!
+            Belum ada diskusi. Mulai percakapan!
           </p>
         )}
 
@@ -188,7 +188,7 @@ export function SessionComments({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Tulis komentar..."
+          placeholder="Tulis pesan..."
           rows={1}
           className="flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none min-h-[40px] max-h-[100px]"
         />

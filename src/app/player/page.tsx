@@ -71,14 +71,27 @@ export default async function PlayerDashboard() {
       }))
     : []
 
+  // Greeting based on time
+  const hour = new Date().getHours()
+  const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam'
+  const firstName = profile.full_name.split(' ')[0]
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {profile.full_name}
-        </p>
+      {/* Greeting Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6 text-primary-foreground">
+        <div className="relative z-10">
+          <p className="text-sm font-medium opacity-90">{greeting},</p>
+          <h1 className="text-2xl font-bold mt-0.5">{firstName}</h1>
+          <p className="text-sm opacity-80 mt-2">
+            {latestAssessment
+              ? `Grade kamu: ${currentGrade} · Average: ${averageScore.toFixed(1)}/10`
+              : 'Belum ada assessment. Join session untuk mulai!'}
+          </p>
+        </div>
+        {/* Decorative circles */}
+        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
+        <div className="absolute -bottom-4 -right-2 w-16 h-16 rounded-full bg-white/5" />
       </div>
 
       {/* Current Status Card */}

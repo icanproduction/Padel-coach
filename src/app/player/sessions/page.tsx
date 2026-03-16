@@ -1,18 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { SessionCard } from '@/components/features/session-card'
-import { JoinButton } from './join-button'
-import { cn } from '@/lib/utils'
-import { CalendarDays, CalendarCheck, Clock } from 'lucide-react'
-
-const PARTICIPANT_STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  approved: 'bg-blue-100 text-blue-800',
-  rejected: 'bg-red-100 text-red-800',
-  attended: 'bg-green-100 text-green-800',
-  no_show: 'bg-gray-100 text-gray-600',
-}
+import { SessionsTabs } from './sessions-tabs'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,165 +64,12 @@ export default async function PlayerSessionsPage() {
         <p className="text-muted-foreground">Browse and manage your coaching sessions</p>
       </div>
 
-      {/* Available Sessions */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarDays className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold">Available Sessions</h2>
-        </div>
-
-        {availableSessions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {availableSessions.map((session) => {
-              const coach = session.coach as { id: string; full_name: string } | null
-              const players = (session.session_players as { player_id: string; status: string }[]) || []
-              const activePlayerCount = players.filter(
-                (p) => p.status === 'pending' || p.status === 'approved' || p.status === 'attended'
-              ).length
-
-              return (
-                <SessionCard
-                  key={session.id}
-                  id={session.id}
-                  date={session.date}
-                  coachName={coach?.full_name || 'TBA'}
-                  sessionType={session.session_type}
-                  locationName={session.location}
-                  status={session.status}
-                  maxPlayers={session.max_players}
-                  playerCount={activePlayerCount}
-                  notes={session.notes}
-                  actions={<JoinButton sessionId={session.id} />}
-                />
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No available sessions at the moment. Check back later!
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* My Sessions - Upcoming */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-blue-500" />
-          <h2 className="text-lg font-semibold">My Upcoming Sessions</h2>
-        </div>
-
-        {upcomingSessions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {upcomingSessions.map((record) => {
-              const session = record.session as {
-                id: string
-                date: string
-                session_type: string
-                status: string
-                max_players: number
-                location: string | null
-                notes: string | null
-                coach: { id: string; full_name: string } | null
-              } | null
-
-              if (!session) return null
-
-              return (
-                <SessionCard
-                  key={`${record.session_id}-${record.player_id}`}
-                  id={session.id}
-                  date={session.date}
-                  coachName={session.coach?.full_name || 'TBA'}
-                  sessionType={session.session_type}
-                  locationName={session.location}
-                  status={session.status}
-                  maxPlayers={session.max_players}
-                  notes={session.notes}
-                  actions={
-                    <span
-                      className={cn(
-                        'text-xs font-medium px-2.5 py-1 rounded-full capitalize',
-                        PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
-                      )}
-                    >
-                      {record.status === 'pending' ? 'Pending Approval' : record.status}
-                    </span>
-                  }
-                />
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No upcoming sessions. Browse available sessions above to join one!
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* My Sessions - Past */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarCheck className="w-5 h-5 text-emerald-500" />
-          <h2 className="text-lg font-semibold">Past Sessions</h2>
-        </div>
-
-        {pastSessions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pastSessions.map((record) => {
-              const session = record.session as {
-                id: string
-                date: string
-                session_type: string
-                status: string
-                max_players: number
-                location: string | null
-                notes: string | null
-                coach: { id: string; full_name: string } | null
-              } | null
-
-              if (!session) return null
-
-              return (
-                <Link key={`past-${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
-                  <SessionCard
-                    id={session.id}
-                    date={session.date}
-                    coachName={session.coach?.full_name || 'TBA'}
-                    sessionType={session.session_type}
-                    locationName={session.location}
-                    status={session.status}
-                    maxPlayers={session.max_players}
-                    notes={session.notes}
-                    actions={
-                      <span
-                        className={cn(
-                          'text-xs font-medium px-2.5 py-1 rounded-full capitalize',
-                          PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
-                        )}
-                      >
-                        {record.status}
-                      </span>
-                    }
-                  />
-                </Link>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <CalendarCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No past sessions yet.
-            </p>
-          </div>
-        )}
-      </section>
+      {/* Tabbed Content */}
+      <SessionsTabs
+        availableSessions={availableSessions}
+        upcomingSessions={upcomingSessions}
+        pastSessions={pastSessions}
+      />
     </div>
   )
 }
