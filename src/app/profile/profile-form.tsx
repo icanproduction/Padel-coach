@@ -293,6 +293,14 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
       {/* Notification Toggle */}
       <NotificationToggle />
 
+      {/* Debug Push */}
+      <a
+        href="/debug-push"
+        className="block w-full text-center p-3 rounded-xl border border-border text-xs text-muted-foreground hover:bg-accent transition-colors"
+      >
+        Debug Push Notifications
+      </a>
+
       {/* Logout Button */}
       <form action={logout}>
         <button
