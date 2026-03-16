@@ -9,10 +9,10 @@ export default function Home() {
       {/* Hero */}
       <div className="flex flex-col items-center justify-center px-6 pt-20 pb-16">
         <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6">
-          <span className="text-2xl font-bold text-primary-foreground">P</span>
+          <span className="text-2xl font-bold text-primary-foreground">L</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
-          Padel Coach Pro
+          Loop Padel Club
         </h1>
         <p className="mt-4 text-lg text-gray-400 text-center max-w-md">
           Player Development System — Diagnostic, Prescription & Progress Tracking

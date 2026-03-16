@@ -21,8 +21,15 @@ export default async function AdminLayout({
 
   if (!profile || profile.role !== 'admin') redirect('/login')
 
+  // Fetch app logo
+  const { data: logoSetting } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'logo_url')
+    .single()
+
   return (
-    <DashboardLayout user={profile as Profile} role="admin">
+    <DashboardLayout user={profile as Profile} role="admin" logoUrl={logoSetting?.value ?? null}>
       {children}
     </DashboardLayout>
   )

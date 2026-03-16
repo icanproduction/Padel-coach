@@ -5,9 +5,10 @@ import type { Profile } from '@/types/database'
 
 interface HeaderProps {
   user: Profile
+  logoUrl?: string | null
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, logoUrl }: HeaderProps) {
   const initials = user.full_name
     .split(' ')
     .map((n) => n[0])
@@ -35,9 +36,17 @@ export function Header({ user }: HeaderProps) {
 
       {/* Right: app logo */}
       <div className="flex items-center gap-1.5">
-        <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-          <span className="text-[10px] font-bold text-primary-foreground">P</span>
-        </div>
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt="Loop Padel Club"
+            className="h-8 w-auto object-contain"
+          />
+        ) : (
+          <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+            <span className="text-[10px] font-bold text-primary-foreground">L</span>
+          </div>
+        )}
       </div>
     </header>
   )

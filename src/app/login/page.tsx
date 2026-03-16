@@ -9,9 +9,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 p-8">
         <div className="text-center">
           <div className="w-12 h-12 rounded-xl bg-primary mx-auto flex items-center justify-center mb-4">
-            <span className="text-xl font-bold text-primary-foreground">P</span>
+            <span className="text-xl font-bold text-primary-foreground">L</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Padel Coach Pro</h1>
+          <h1 className="text-2xl font-bold text-foreground">Loop Padel Club</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Sign in to your account
           </p>

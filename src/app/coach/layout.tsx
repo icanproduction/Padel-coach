@@ -21,8 +21,14 @@ export default async function CoachLayout({
 
   if (!profile || (profile.role !== 'coach' && profile.role !== 'admin')) redirect('/login')
 
+  const { data: logoSetting } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'logo_url')
+    .single()
+
   return (
-    <DashboardLayout user={profile as Profile} role="coach">
+    <DashboardLayout user={profile as Profile} role="coach" logoUrl={logoSetting?.value ?? null}>
       {children}
     </DashboardLayout>
   )

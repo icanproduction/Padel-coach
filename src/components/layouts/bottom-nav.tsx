@@ -10,6 +10,7 @@ import {
   TrendingUp,
   BookOpen,
   MapPin,
+  Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
@@ -27,6 +28,7 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: 'Players', href: '/admin/players', icon: Users },
     { label: 'Coaches', href: '/admin/coaches', icon: GraduationCap },
     { label: 'Locations', href: '/admin/locations', icon: MapPin },
+    { label: 'Settings', href: '/admin/settings', icon: Settings },
   ],
   coach: [
     { label: 'Home', href: '/coach', icon: LayoutDashboard },

@@ -7,7 +7,7 @@ import { QueryProvider } from '@/components/providers/query-provider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Padel Coach Pro',
+  title: 'Loop Padel Club',
   description: 'Player development system - Diagnostic, Prescription & Progress tracking for padel coaching',
 }
 

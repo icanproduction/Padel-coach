@@ -32,8 +32,14 @@ export default async function PlayerLayout({
     redirect('/onboarding')
   }
 
+  const { data: logoSetting } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'logo_url')
+    .single()
+
   return (
-    <DashboardLayout user={profile as Profile} role="player">
+    <DashboardLayout user={profile as Profile} role="player" logoUrl={logoSetting?.value ?? null}>
       {children}
     </DashboardLayout>
   )
