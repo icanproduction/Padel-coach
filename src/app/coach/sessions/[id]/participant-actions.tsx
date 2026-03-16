@@ -21,7 +21,7 @@ export function ParticipantActions({
   const [isPending, startTransition] = useTransition()
 
   function handleUpdate(
-    newStatus: 'approved' | 'rejected' | 'attended' | 'no_show',
+    newStatus: 'approved' | 'rejected',
     e: React.MouseEvent
   ) {
     e.preventDefault()
