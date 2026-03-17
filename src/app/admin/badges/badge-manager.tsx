@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 import { createBadge, deleteBadge, giveBadgeToPlayer, removeBadgeFromPlayer } from '@/app/actions/badge-actions'
-import { Plus, Trash2, Award, Upload, UserPlus, X, Image as ImageIcon } from 'lucide-react'
+import { Plus, Trash2, Award, Upload, UserPlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Badge {

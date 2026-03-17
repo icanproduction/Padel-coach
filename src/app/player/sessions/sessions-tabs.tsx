@@ -100,6 +100,7 @@ export function SessionsTabs({ availableSessions, upcomingSessions, pastSessions
                     status={session.status}
                     maxPlayers={session.max_players}
                     playerCount={activePlayerCount}
+                    pricePax={session.price_per_pax}
                     notes={session.notes}
                     actions={<JoinButton sessionId={session.id} />}
                   />

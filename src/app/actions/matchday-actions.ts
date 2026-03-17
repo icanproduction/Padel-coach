@@ -10,6 +10,21 @@ import {
 } from '@/lib/matchday-engine'
 import type { MatchdayFormat, MatchdayScoringType } from '@/types/database'
 
+async function requireCoachOrAdmin() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' as const, supabase, user: null }
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'coach')) {
+    return { error: 'Only admin/coach' as const, supabase, user: null }
+  }
+  return { error: null, supabase, user }
+}
+
 export async function createMatchday(input: {
   sessionId: string
   format: MatchdayFormat
@@ -63,9 +78,8 @@ export async function createMatchday(input: {
 }
 
 export async function startMatchday(matchdayId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized' }
+  const { error: authError, supabase } = await requireCoachOrAdmin()
+  if (authError) return { error: authError }
 
   const { data: matchday } = await supabase
     .from('matchdays')
@@ -107,7 +121,7 @@ export async function startMatchday(matchdayId: string) {
       matchesPlayed: 0,
     }))
 
-    const round1 = generateMexicanoRound(standings, matchday.courts, 1, new Map())
+    const round1 = generateMexicanoRound(standings, matchday.courts, 1)
 
     const matchInserts = round1.map(match => ({
       matchday_id: matchdayId,
@@ -144,9 +158,8 @@ export async function submitMatchScore(
   scoreA: number,
   scoreB: number
 ) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized' }
+  const { error: authError, supabase } = await requireCoachOrAdmin()
+  if (authError) return { error: authError }
 
   // Get match and matchday
   const { data: match } = await supabase
@@ -247,7 +260,6 @@ export async function submitMatchScore(
           standings,
           matchday.courts,
           nextRound,
-          new Map()
         )
 
         const inserts = nextMatches.map(m => ({
@@ -273,9 +285,8 @@ export async function submitMatchScore(
 }
 
 export async function endMatchday(matchdayId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized' }
+  const { error: authError, supabase } = await requireCoachOrAdmin()
+  if (authError) return { error: authError }
 
   const { data: matchday } = await supabase
     .from('matchdays')
@@ -290,10 +301,10 @@ export async function endMatchday(matchdayId: string) {
     .update({ status: 'completed' })
     .eq('id', matchdayId)
 
-  // Cancel any pending/in_progress matches
+  // Delete unplayed matches (no scores)
   await supabase
     .from('matchday_matches')
-    .update({ status: 'completed' })
+    .delete()
     .eq('matchday_id', matchdayId)
     .in('status', ['pending', 'in_progress'])
 
@@ -325,9 +336,8 @@ export async function getMatchday(sessionId: string) {
 }
 
 export async function deleteMatchday(matchdayId: string) {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized' }
+  const { error: authError, supabase } = await requireCoachOrAdmin()
+  if (authError) return { error: authError }
 
   const { data: matchday } = await supabase
     .from('matchdays')

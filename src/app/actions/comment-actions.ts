@@ -174,7 +174,7 @@ export async function addSessionComment(sessionId: string, message: string) {
       const payload = {
         title: 'Pesan Baru di Session',
         body: `${authorName}: ${truncatedMsg}`,
-        url: `/player/sessions/${sessionId}`,
+        url: `/session/${sessionId}`,
       }
 
       await Promise.allSettled(

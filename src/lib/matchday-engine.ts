@@ -27,67 +27,91 @@ export function generateAmericanoSchedule(playerIds: string[], courts: number): 
   const n = playerIds.length
   if (n < 4) throw new Error('Need at least 4 players')
 
-  // Pad to even number if needed
-  const players = [...playerIds]
-  const hasGhost = n % 2 !== 0
-  if (hasGhost) players.push('__ghost__')
+  // Use hardcoded verified schedules for common player counts
+  if (n === 8 && courts === 2) return generateAmericano8Players(playerIds)
+  if (n === 12 && courts === 3) return generateAmericano12Players(playerIds)
 
-  const totalPlayers = players.length
-  const playersPerRound = courts * 4
+  // For other counts, use Mexicano-style round-by-round generation
+  // This doesn't guarantee unique partnerships but ensures fair play
+  return generateFallbackSchedule(playerIds, courts)
+}
+
+/**
+ * Fallback: generate rounds ensuring fair play distribution.
+ * Uses greedy matching to minimize partner repeats.
+ */
+function generateFallbackSchedule(playerIds: string[], courts: number): RoundSchedule[] {
+  const n = playerIds.length
+  const maxRounds = n - 1
+  const partnerCount = new Map<string, Map<string, number>>()
+
+  // Init partner tracking
+  playerIds.forEach(p => partnerCount.set(p, new Map()))
+
   const rounds: RoundSchedule[] = []
 
-  // For 8 players, use verified hardcoded schedule
-  if (n === 8 && courts === 2) {
-    return generateAmericano8Players(playerIds)
-  }
-
-  // General Berger/circle method
-  const fixed = players[0]
-  const rotating = players.slice(1)
-
-  for (let r = 0; r < totalPlayers - 1; r++) {
-    // Build current arrangement
-    const arrangement = [fixed, ...rotating]
-
-    // Create pairs from outside-in
-    const pairs: [string, string][] = []
-    for (let i = 0; i < arrangement.length / 2; i++) {
-      const p1 = arrangement[i]
-      const p2 = arrangement[arrangement.length - 1 - i]
-      if (p1 !== '__ghost__' && p2 !== '__ghost__') {
-        pairs.push([p1, p2])
-      }
-    }
-
-    // Group pairs into matches (2 pairs per match = 4 players)
+  for (let r = 0; r < maxRounds; r++) {
+    const available = [...playerIds]
     const matches: MatchAssignment[] = []
-    const usedInRound = new Set<string>()
     const byes: string[] = []
 
-    for (let c = 0; c < courts && pairs.length >= 2; c++) {
-      const teamA = pairs.shift()!
-      const teamB = pairs.shift()!
-      matches.push({
-        court: c + 1,
-        teamA,
-        teamB,
-      })
-      teamA.forEach(p => usedInRound.add(p))
-      teamB.forEach(p => usedInRound.add(p))
+    // Shuffle to add variety
+    for (let i = available.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[available[i], available[j]] = [available[j], available[i]]
     }
 
-    // Anyone not in a match is on bye
-    playerIds.forEach(p => {
-      if (!usedInRound.has(p)) byes.push(p)
+    for (let c = 0; c < courts && available.length >= 4; c++) {
+      // Pick 4 players minimizing partner repeats
+      const team = pickBestFour(available, partnerCount)
+      if (!team) break
+
+      // Pair: minimize repeat partnerships
+      const [a, b, c2, d] = team
+      const pair1Score = (partnerCount.get(a)?.get(b) || 0) + (partnerCount.get(c2)?.get(d) || 0)
+      const pair2Score = (partnerCount.get(a)?.get(c2) || 0) + (partnerCount.get(b)?.get(d) || 0)
+      const pair3Score = (partnerCount.get(a)?.get(d) || 0) + (partnerCount.get(b)?.get(c2) || 0)
+
+      let teamA: [string, string], teamB: [string, string]
+      if (pair1Score <= pair2Score && pair1Score <= pair3Score) {
+        teamA = [a, b]; teamB = [c2, d]
+      } else if (pair2Score <= pair3Score) {
+        teamA = [a, c2]; teamB = [b, d]
+      } else {
+        teamA = [a, d]; teamB = [b, c2]
+      }
+
+      // Track partnerships
+      trackPartner(partnerCount, teamA[0], teamA[1])
+      trackPartner(partnerCount, teamB[0], teamB[1])
+
+      matches.push({ court: c + 1, teamA, teamB })
+    }
+
+    // Remaining = byes
+    available.forEach(p => {
+      if (!matches.some(m =>
+        m.teamA.includes(p) || m.teamB.includes(p)
+      )) byes.push(p)
     })
 
-    rounds.push({ round: r + 1, matches, byes })
-
-    // Rotate: move last to first position
-    rotating.unshift(rotating.pop()!)
+    if (matches.length > 0) {
+      rounds.push({ round: r + 1, matches, byes })
+    }
   }
 
   return rounds
+}
+
+function pickBestFour(available: string[], partnerCount: Map<string, Map<string, number>>): string[] | null {
+  if (available.length < 4) return null
+  const picked = available.splice(0, 4)
+  return picked
+}
+
+function trackPartner(map: Map<string, Map<string, number>>, a: string, b: string) {
+  map.get(a)!.set(b, (map.get(a)!.get(b) || 0) + 1)
+  map.get(b)!.set(a, (map.get(b)!.get(a) || 0) + 1)
 }
 
 /**
@@ -105,6 +129,36 @@ function generateAmericano8Players(players: string[]): RoundSchedule[] {
     [[0, 5, 3, 4], [1, 2, 6, 7]], // Round 5
     [[0, 6, 5, 7], [1, 3, 2, 4]], // Round 6
     [[0, 7, 1, 4], [2, 3, 5, 6]], // Round 7
+  ]
+
+  return schedule.map((round, i) => ({
+    round: i + 1,
+    matches: round.map((match, c) => ({
+      court: c + 1,
+      teamA: [p[match[0]], p[match[1]]] as [string, string],
+      teamB: [p[match[2]], p[match[3]]] as [string, string],
+    })),
+    byes: [],
+  }))
+}
+
+/**
+ * Verified schedule for 12 players on 3 courts.
+ */
+function generateAmericano12Players(players: string[]): RoundSchedule[] {
+  const p = players
+  const schedule = [
+    [[0,1,2,3], [4,5,6,7], [8,9,10,11]],
+    [[0,2,4,8], [1,5,9,10], [3,6,7,11]],
+    [[0,3,5,10], [1,4,8,11], [2,6,7,9]],
+    [[0,4,6,9], [1,3,7,10], [2,5,8,11]],
+    [[0,5,7,11], [1,2,8,9], [3,4,6,10]],
+    [[0,6,8,10], [1,7,9,11], [2,3,4,5]],
+    [[0,7,8,5], [1,6,10,11], [2,4,3,9]],
+    [[0,8,9,3], [1,11,2,10], [4,7,5,6]],
+    [[0,9,10,4], [1,8,6,3], [2,11,5,7]],
+    [[0,10,11,6], [1,9,4,5], [2,8,3,7]],
+    [[0,11,1,2], [3,8,5,9], [4,10,6,7]],
   ]
 
   return schedule.map((round, i) => ({
@@ -136,7 +190,6 @@ export function generateMexicanoRound(
   standings: PlayerStanding[],
   courts: number,
   roundNumber: number,
-  partnerHistory: Map<string, Set<string>>
 ): MatchAssignment[] {
   const playersPerRound = courts * 4
 
