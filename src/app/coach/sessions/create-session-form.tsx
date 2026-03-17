@@ -102,9 +102,9 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
         coach_id: coachId,
         date: new Date(dateTime).toISOString(),
         session_type: formData.session_type,
-        max_players: isOpenPlay ? 99 : formData.max_players,
+        max_players: formData.max_players,
         location_id: formData.location_id || undefined,
-        courts_booked: isOpenPlay ? null : formData.courts_booked,
+        courts_booked: formData.courts_booked,
         duration_hours: formData.duration_hours,
         reclub_url: formData.reclub_url || undefined,
         price_per_pax: formData.price_per_pax ? parseInt(formData.price_per_pax) : undefined,
@@ -266,9 +266,8 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
             </div>
           </section>
 
-          {/* Courts + Players — pill buttons (hidden for Open Play) */}
-          {!isOpenPlay && (
-            <div className="grid grid-cols-2 gap-4">
+          {/* Courts + Players */}
+          <div className="grid grid-cols-2 gap-4">
               {/* Courts */}
               <section>
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
@@ -321,7 +320,6 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
                 </div>
               </section>
             </div>
-          )}
 
           {/* ReClub Link */}
           <section>
