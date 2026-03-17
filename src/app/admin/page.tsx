@@ -186,6 +186,7 @@ export default async function AdminDashboard() {
                   courtsBooked={session.courts_booked}
                   durationHours={session.duration_hours}
                   reclubUrl={session.reclub_url}
+                  pricePax={session.price_per_pax}
                   status={session.status}
                   maxPlayers={session.max_players}
                   playerCount={

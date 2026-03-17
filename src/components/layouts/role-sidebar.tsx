@@ -8,6 +8,8 @@ import {
   Users,
   GraduationCap,
   MapPin,
+  Megaphone,
+  Award,
   Settings,
   TrendingUp,
   BookOpen,
@@ -30,6 +32,8 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { label: 'Players', href: '/admin/players', icon: Users },
     { label: 'Coaches', href: '/admin/coaches', icon: GraduationCap },
     { label: 'Locations', href: '/admin/locations', icon: MapPin },
+    { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
+    { label: 'Badges', href: '/admin/badges', icon: Award },
   ],
   coach: [
     { label: 'Dashboard', href: '/coach', icon: LayoutDashboard },

@@ -20,13 +20,15 @@ import {
 } from 'lucide-react'
 import type { Profile, PlayerProfile } from '@/types/database'
 import { NotificationToggle } from '@/components/features/notification-prompt'
+import { Award } from 'lucide-react'
 
 interface ProfileFormProps {
   profile: Profile
   playerProfile: PlayerProfile | null
+  badges?: any[]
 }
 
-export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
+export function ProfileForm({ profile, playerProfile, badges = [] }: ProfileFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
@@ -289,6 +291,31 @@ export function ProfileForm({ profile, playerProfile }: ProfileFormProps) {
           'Save Changes'
         )}
       </button>
+
+      {/* Badges */}
+      {badges.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Award className="w-4 h-4 text-amber-500" />
+            <h3 className="text-sm font-semibold">My Badges ({badges.length})</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {badges.map((pb: any) => (
+              <div
+                key={pb.id}
+                className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-200"
+              >
+                {pb.badge?.image_url ? (
+                  <img src={pb.badge.image_url} alt={pb.badge.name} className="w-5 h-5 rounded-full object-cover" />
+                ) : (
+                  <Award className="w-4 h-4 text-amber-600" />
+                )}
+                <span className="text-xs font-medium text-amber-800">{pb.badge?.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Notification Toggle */}
       <NotificationToggle />

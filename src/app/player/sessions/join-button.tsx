@@ -12,7 +12,7 @@ interface JoinButtonProps {
 
 export function JoinButton({ sessionId, className }: JoinButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [result, setResult] = useState<{ success?: boolean; error?: string } | null>(null)
+  const [result, setResult] = useState<{ success?: boolean; error?: string; status?: string } | null>(null)
 
   async function handleJoin() {
     setIsLoading(true)
@@ -23,15 +23,22 @@ export function JoinButton({ sessionId, className }: JoinButtonProps) {
     if (response.error) {
       setResult({ error: response.error })
     } else {
-      setResult({ success: true })
+      setResult({ success: true, status: response.data?.status })
     }
 
     setIsLoading(false)
   }
 
   if (result?.success) {
+    if (result.status === 'waitlisted') {
+      return (
+        <span className="text-xs font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg">
+          Waitlisted
+        </span>
+      )
+    }
     return (
-      <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg">
+      <span className="text-xs font-medium text-yellow-700 bg-yellow-100 px-3 py-1.5 rounded-lg">
         Request Sent
       </span>
     )

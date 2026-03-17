@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSessionComments } from '@/app/actions/comment-actions'
-import { SessionStatusButtons, PlayerStatusButtons } from './session-detail-client'
+import { SessionStatusButtons, PlayerStatusButtons, ApproveCancelButton, WaitlistBadge } from './session-detail-client'
 import { SessionComments } from '@/components/features/session-comments'
 import {
   Calendar,
@@ -13,6 +13,7 @@ import {
   FileText,
   MapPin,
   ExternalLink,
+  Banknote,
 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -67,8 +68,14 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
 
   const pendingPlayers =
     session.session_players?.filter((p: any) => p.status === 'pending') ?? []
+  const cancelRequestedPlayers =
+    session.session_players?.filter((p: any) => p.status === 'cancel_requested') ?? []
+  const waitlistedPlayers =
+    session.session_players?.filter((p: any) => p.status === 'waitlisted') ?? []
   const otherPlayers =
-    session.session_players?.filter((p: any) => p.status !== 'pending') ?? []
+    session.session_players?.filter((p: any) =>
+      p.status !== 'pending' && p.status !== 'cancel_requested' && p.status !== 'waitlisted'
+    ) ?? []
 
   const statusStyles: Record<string, string> = {
     scheduled: 'bg-blue-100 text-blue-800',
@@ -176,6 +183,16 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
               </span>
             </div>
 
+            {/* Price per Pax */}
+            {session.price_per_pax != null && session.price_per_pax > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <Banknote className="w-4 h-4 text-muted-foreground" />
+                <span>
+                  Rp {new Intl.NumberFormat('id-ID').format(session.price_per_pax)} / pax
+                </span>
+              </div>
+            )}
+
             {/* ReClub */}
             {session.reclub_url && (
               <div className="flex items-center gap-2 text-sm">
@@ -255,6 +272,116 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
                     playerId={sp.player_id}
                     currentStatus={sp.status}
                   />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Requests */}
+      {cancelRequestedPlayers.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">
+            Cancel Requests ({cancelRequestedPlayers.length})
+          </h2>
+          <div className="space-y-2">
+            {cancelRequestedPlayers.map((sp: any) => {
+              const player = sp.profiles
+              const initials = (player?.full_name ?? '??')
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+
+              return (
+                <div
+                  key={sp.player_id}
+                  className="bg-card rounded-xl border border-orange-200 p-4 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                      {player?.avatar_url ? (
+                        <img
+                          src={player.avatar_url}
+                          alt={player.full_name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {player?.full_name ?? 'Unknown Player'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {player?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <ApproveCancelButton
+                    sessionId={session.id}
+                    playerId={sp.player_id}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Waitlist */}
+      {waitlistedPlayers.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3">
+            Waitlist ({waitlistedPlayers.length})
+          </h2>
+          <div className="space-y-2">
+            {waitlistedPlayers.map((sp: any) => {
+              const player = sp.profiles
+              const initials = (player?.full_name ?? '??')
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+
+              return (
+                <div
+                  key={sp.player_id}
+                  className="bg-card rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                      {player?.avatar_url ? (
+                        <img
+                          src={player.avatar_url}
+                          alt={player.full_name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {player?.full_name ?? 'Unknown Player'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {player?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <WaitlistBadge />
+                    <PlayerStatusButtons
+                      sessionId={session.id}
+                      playerId={sp.player_id}
+                      currentStatus={sp.status}
+                    />
+                  </div>
                 </div>
               )
             })}

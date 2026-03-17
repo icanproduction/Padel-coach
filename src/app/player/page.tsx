@@ -6,7 +6,7 @@ import { ArchetypeBadge } from '@/components/features/archetype-badge'
 import { AssessmentRadarChart } from '@/components/features/radar-chart'
 import { OpenPlayReadiness } from '@/components/features/open-play-readiness'
 import { ASSESSMENT_PARAMETERS } from '@/types/database'
-import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList, Calendar, Clock } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, Trophy, ClipboardList, Calendar, Clock, Award } from 'lucide-react'
 import { NotificationPrompt } from '@/components/features/notification-prompt'
 import { cn } from '@/lib/utils'
 
@@ -92,6 +92,13 @@ export default async function PlayerDashboard() {
       }))
     : []
 
+  // Get player badges
+  const { data: myBadges } = await supabase
+    .from('player_badges')
+    .select('*, badge:badges(id, name, image_url)')
+    .eq('player_id', user.id)
+    .order('given_at', { ascending: false })
+
   // Greeting based on time
   const hour = new Date().getHours()
   const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam'
@@ -150,6 +157,32 @@ export default async function PlayerDashboard() {
 
       {/* Notification Prompt */}
       <NotificationPrompt />
+
+      {/* My Badges */}
+      {myBadges && myBadges.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Award className="w-4 h-4 text-amber-500" />
+            <h2 className="text-sm font-semibold">My Badges</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {myBadges.map((pb: any) => (
+              <div
+                key={pb.id}
+                className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-200"
+                title={pb.badge?.name}
+              >
+                {pb.badge?.image_url ? (
+                  <img src={pb.badge.image_url} alt={pb.badge.name} className="w-5 h-5 rounded-full object-cover" />
+                ) : (
+                  <Award className="w-4 h-4 text-amber-600" />
+                )}
+                <span className="text-xs font-medium text-amber-800">{pb.badge?.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Current Status Card */}
       <div className="bg-card rounded-xl border border-border p-6">

@@ -63,6 +63,7 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
     courts_booked: 1,
     duration_hours: 1,
     reclub_url: '',
+    price_per_pax: '',
     notes: '',
   })
 
@@ -80,6 +81,7 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
       courts_booked: 1,
       duration_hours: 1,
       reclub_url: '',
+      price_per_pax: '',
       notes: '',
     })
     setError(null)
@@ -105,6 +107,7 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
         courts_booked: isOpenPlay ? null : formData.courts_booked,
         duration_hours: formData.duration_hours,
         reclub_url: formData.reclub_url || undefined,
+        price_per_pax: formData.price_per_pax ? parseInt(formData.price_per_pax) : undefined,
         notes: formData.notes || undefined,
       })
 
@@ -335,6 +338,23 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
                 className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
+          </section>
+
+          {/* Harga per Pax */}
+          <section>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
+              Harga per Pax <span className="font-normal normal-case">(optional)</span>
+            </label>
+            <input
+              type="number"
+              value={formData.price_per_pax}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, price_per_pax: e.target.value }))
+              }
+              placeholder="Rp 0"
+              min={0}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
           </section>
 
           {/* Submit button — above notes */}

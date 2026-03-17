@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { Calendar, Clock, Users, User, MapPin, Link2 } from 'lucide-react'
+import { Calendar, Clock, Users, User, MapPin, Link2, Banknote } from 'lucide-react'
 
 const STATUS_STYLES: Record<string, string> = {
   scheduled: 'bg-blue-100 text-blue-800',
@@ -32,6 +32,7 @@ interface SessionCardProps {
   courtsBooked?: number | null
   durationHours?: number
   reclubUrl?: string | null
+  pricePax?: number | null
   notes?: string | null
   actions?: React.ReactNode
   className?: string
@@ -49,6 +50,7 @@ export function SessionCard({
   courtsBooked,
   durationHours,
   reclubUrl,
+  pricePax,
   notes,
   actions,
   className,
@@ -116,6 +118,14 @@ export function SessionCard({
                 : `${playerCount}/${maxPlayers} players`}
             </span>
           </div>
+
+          {/* Price per pax */}
+          {pricePax != null && pricePax > 0 && (
+            <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+              <Banknote className="w-3.5 h-3.5" />
+              <span>Rp {new Intl.NumberFormat('id-ID').format(pricePax)} / pax</span>
+            </div>
+          )}
 
           {/* ReClub link indicator */}
           {reclubUrl && (

@@ -127,6 +127,63 @@ export async function addSessionComment(sessionId: string, message: string) {
 
     if (error) return { error: error.message }
 
+    // Send push notifications to other session participants
+    try {
+      const { sendPushToUser } = await import('@/lib/push')
+
+      // Get author name
+      const { data: authorProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+      const authorName = authorProfile?.full_name || 'Seseorang'
+
+      // Get session coach
+      const { data: session } = await supabase
+        .from('sessions')
+        .select('coach_id')
+        .eq('id', sessionId)
+        .single()
+
+      // Get all participant player IDs
+      const { data: participants } = await supabase
+        .from('session_players')
+        .select('player_id')
+        .eq('session_id', sessionId)
+
+      // Collect all user IDs to notify (excluding current user)
+      const notifyIds = new Set<string>()
+
+      if (session?.coach_id && session.coach_id !== user.id) {
+        notifyIds.add(session.coach_id)
+      }
+
+      if (participants) {
+        for (const p of participants) {
+          if (p.player_id !== user.id) {
+            notifyIds.add(p.player_id)
+          }
+        }
+      }
+
+      const truncatedMsg = message.trim().length > 100
+        ? message.trim().slice(0, 100) + '...'
+        : message.trim()
+
+      const payload = {
+        title: 'Pesan Baru di Session',
+        body: `${authorName}: ${truncatedMsg}`,
+        url: `/player/sessions/${sessionId}`,
+      }
+
+      await Promise.allSettled(
+        Array.from(notifyIds).map((uid) => sendPushToUser(uid, payload))
+      )
+    } catch {
+      // Push notification failure should not block comment creation
+    }
+
     revalidatePath(`/coach/sessions/${sessionId}`)
     revalidatePath(`/player/sessions/${sessionId}`)
     revalidatePath(`/admin/sessions/${sessionId}`)

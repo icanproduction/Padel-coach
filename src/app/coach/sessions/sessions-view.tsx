@@ -17,6 +17,7 @@ interface SessionData {
   courts_booked: number | null
   duration_hours: number
   reclub_url: string | null
+  price_per_pax: number | null
   coach: { full_name: string } | null
   session_players: { player_id: string; status: string }[]
   locations: { name: string; maps_link: string | null } | null
@@ -72,6 +73,7 @@ export function SessionsView({ sessions }: SessionsViewProps) {
           courtsBooked={session.courts_booked}
           durationHours={session.duration_hours}
           reclubUrl={session.reclub_url}
+          pricePax={session.price_per_pax}
           status={session.status}
           maxPlayers={session.max_players}
           playerCount={getPlayerCount(session)}

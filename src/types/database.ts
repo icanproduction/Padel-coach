@@ -21,7 +21,7 @@ export type SessionType = 'discovery' | 'coaching_drilling' | 'open_play'
 
 export type SessionStatus = 'scheduled' | 'in_progress' | 'completed'
 
-export type ParticipantStatus = 'pending' | 'approved' | 'rejected' | 'attended' | 'no_show'
+export type ParticipantStatus = 'pending' | 'approved' | 'rejected' | 'attended' | 'no_show' | 'waitlisted' | 'cancel_requested'
 
 export type ModuleStatus = 'not_started' | 'in_progress' | 'completed'
 
@@ -122,6 +122,7 @@ export interface Session {
   courts_booked: number | null
   duration_hours: number
   reclub_url: string | null
+  price_per_pax: number | null
   selected_modules: string[] | null
   notes: string | null
   created_at: string
@@ -232,6 +233,7 @@ export interface CreateSessionInput {
   courts_booked?: number | null
   duration_hours?: number
   reclub_url?: string
+  price_per_pax?: number | null
   notes?: string
 }
 

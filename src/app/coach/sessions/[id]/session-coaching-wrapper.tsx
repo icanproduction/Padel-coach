@@ -29,6 +29,7 @@ interface SessionCardData {
   courtsBooked?: number | null
   durationHours?: number
   reclubUrl?: string | null
+  pricePax?: number | null
   status: string
   maxPlayers: number
   playerCount: number

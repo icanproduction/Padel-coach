@@ -3,9 +3,9 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateSessionStatus, deleteSession } from '@/app/actions/session-actions'
-import { updateParticipantStatus } from '@/app/actions/participant-actions'
+import { updateParticipantStatus, approveCancelRequest } from '@/app/actions/participant-actions'
 import type { SessionStatus, ParticipantStatus } from '@/types/database'
-import { Loader2, Play, CheckCircle, UserCheck, UserX, Trash2 } from 'lucide-react'
+import { Loader2, Play, CheckCircle, UserCheck, UserX, Trash2, Clock } from 'lucide-react'
 
 interface SessionStatusButtonsProps {
   sessionId: string
@@ -142,7 +142,7 @@ export function PlayerStatusButtons({ sessionId, playerId, currentStatus }: Play
     })
   }
 
-  if (currentStatus === 'pending') {
+  if (currentStatus === 'pending' || currentStatus === 'waitlisted') {
     return (
       <div className="flex items-center gap-2">
         <button
@@ -182,6 +182,46 @@ export function PlayerStatusButtons({ sessionId, playerId, currentStatus }: Play
   return (
     <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusStyles[currentStatus] ?? 'text-gray-700 bg-gray-100'}`}>
       {currentStatus.replace('_', ' ')}
+    </span>
+  )
+}
+
+interface ApproveCancelButtonProps {
+  sessionId: string
+  playerId: string
+}
+
+export function ApproveCancelButton({ sessionId, playerId }: ApproveCancelButtonProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  function handleApproveCancel() {
+    startTransition(async () => {
+      const result = await approveCancelRequest(sessionId, playerId)
+      if (result.error) {
+        alert(result.error)
+      }
+      router.refresh()
+    })
+  }
+
+  return (
+    <button
+      onClick={handleApproveCancel}
+      disabled={isPending}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:opacity-50"
+    >
+      {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <UserCheck className="w-3 h-3" />}
+      Approve Cancel
+    </button>
+  )
+}
+
+export function WaitlistBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+      <Clock className="w-3 h-3" />
+      Waitlisted
     </span>
   )
 }

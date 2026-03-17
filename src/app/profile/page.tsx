@@ -20,13 +20,22 @@ export default async function ProfilePage() {
 
   // Get player profile if player
   let playerProfile = null
+  let playerBadges: any[] = []
   if (profile.role === 'player') {
-    const { data } = await supabase
-      .from('player_profiles')
-      .select('*')
-      .eq('player_id', user.id)
-      .single()
-    playerProfile = data
+    const [profileResult, badgesResult] = await Promise.all([
+      supabase
+        .from('player_profiles')
+        .select('*')
+        .eq('player_id', user.id)
+        .single(),
+      supabase
+        .from('player_badges')
+        .select('*, badge:badges(id, name, image_url)')
+        .eq('player_id', user.id)
+        .order('given_at', { ascending: false }),
+    ])
+    playerProfile = profileResult.data
+    playerBadges = badgesResult.data ?? []
   }
 
   return (
@@ -43,7 +52,7 @@ export default async function ProfilePage() {
       </header>
 
       <main className="px-4 py-6 max-w-lg mx-auto">
-        <ProfileForm profile={profile} playerProfile={playerProfile} />
+        <ProfileForm profile={profile} playerProfile={playerProfile} badges={playerBadges} />
       </main>
     </div>
   )

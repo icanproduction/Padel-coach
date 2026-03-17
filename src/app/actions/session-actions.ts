@@ -32,6 +32,7 @@ export async function createSession(input: CreateSessionInput) {
         courts_booked: input.session_type === 'open_play' ? null : (input.courts_booked || 1),
         duration_hours: input.duration_hours || 1.0,
         reclub_url: input.reclub_url || null,
+        price_per_pax: input.price_per_pax || null,
         notes: input.notes || null,
       })
       .select()
