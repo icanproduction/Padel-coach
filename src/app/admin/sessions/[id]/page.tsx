@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getSessionComments } from '@/app/actions/comment-actions'
+import { getMatchday } from '@/app/actions/matchday-actions'
+import { MatchdayPanel } from '@/components/features/matchday-panel'
 import { SessionStatusButtons, PlayerStatusButtons, ApproveCancelButton, WaitlistBadge } from './session-detail-client'
 import { SessionComments } from '@/components/features/session-comments'
 import {
@@ -27,7 +29,10 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const commentsResult = await getSessionComments(id)
+  const [commentsResult, matchdayResult] = await Promise.all([
+    getSessionComments(id),
+    getMatchday(id),
+  ])
 
   const { data: session, error } = await supabase
     .from('sessions')
@@ -449,6 +454,23 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* Matchday Panel */}
+      <MatchdayPanel
+        sessionId={session.id}
+        sessionType={session.session_type}
+        courts={session.courts_booked || 2}
+        attendedPlayers={
+          (session.session_players || [])
+            .filter((sp: any) => sp.status === 'approved' || sp.status === 'attended')
+            .map((sp: any) => ({
+              id: sp.profiles?.id || sp.player_id,
+              full_name: sp.profiles?.full_name || 'Unknown',
+            }))
+        }
+        matchdayData={matchdayResult.data}
+        isCoachOrAdmin={true}
+      />
 
       {/* Session Comments */}
       {user && (

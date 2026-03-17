@@ -284,3 +284,50 @@ export interface RecordModuleInput {
   status: ModuleStatus
   notes?: string
 }
+
+// =====================================================
+// MATCHDAY (Americano / Mexicano)
+// =====================================================
+
+export type MatchdayFormat = 'americano' | 'mexicano'
+export type MatchdayScoringType = 'points_16' | 'points_21' | 'points_32' | 'tennis'
+export type MatchdayStatus = 'setup' | 'in_progress' | 'completed'
+export type MatchStatus = 'pending' | 'in_progress' | 'completed'
+
+export interface Matchday {
+  id: string
+  session_id: string
+  format: MatchdayFormat
+  scoring_type: MatchdayScoringType
+  status: MatchdayStatus
+  courts: number
+  player_ids: string[]
+  created_by: string | null
+  created_at: string
+}
+
+export interface MatchdayMatch {
+  id: string
+  matchday_id: string
+  round_number: number
+  court_number: number
+  team_a_player1: string
+  team_a_player2: string
+  team_b_player1: string
+  team_b_player2: string
+  score_a: number | null
+  score_b: number | null
+  status: MatchStatus
+  completed_at: string | null
+}
+
+export interface MatchdayLeaderboardEntry {
+  playerId: string
+  playerName: string
+  totalPoints: number
+  matchesPlayed: number
+  wins: number
+  losses: number
+  draws: number
+  avgPoints: number
+}

@@ -2,6 +2,8 @@ import { getSessionById } from '@/app/actions/session-actions'
 import { getSessionAssessments } from '@/app/actions/assessment-actions'
 import { getSessionModuleRecords } from '@/app/actions/coaching-actions'
 import { getSessionComments } from '@/app/actions/comment-actions'
+import { getMatchday } from '@/app/actions/matchday-actions'
+import { MatchdayPanel } from '@/components/features/matchday-panel'
 import { getAllPlayers } from '@/app/actions/player-actions'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { SessionCard } from '@/components/features/session-card'
@@ -29,12 +31,13 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [sessionResult, assessmentsResult, playersResult, moduleRecordsResult, commentsResult] = await Promise.all([
+  const [sessionResult, assessmentsResult, playersResult, moduleRecordsResult, commentsResult, matchdayResult] = await Promise.all([
     getSessionById(id),
     getSessionAssessments(id),
     getAllPlayers(),
     getSessionModuleRecords(id),
     getSessionComments(id),
+    getMatchday(id),
   ])
 
   if (sessionResult.error || !sessionResult.data) {
@@ -359,6 +362,23 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
           ))}
         </div>
       )}
+
+      {/* Matchday Panel */}
+      <MatchdayPanel
+        sessionId={session.id}
+        sessionType={session.session_type}
+        courts={session.courts_booked || 2}
+        attendedPlayers={
+          (session.session_players || [])
+            .filter((sp: any) => sp.status === 'approved' || sp.status === 'attended')
+            .map((sp: any) => ({
+              id: sp.profiles?.id || sp.player_id,
+              full_name: sp.profiles?.full_name || 'Unknown',
+            }))
+        }
+        matchdayData={matchdayResult.data}
+        isCoachOrAdmin={true}
+      />
 
       {/* Session Comments */}
       {user && (
