@@ -6,6 +6,7 @@ import { JoinButton } from './join-button'
 import { CancelButton } from './cancel-button'
 import { cn } from '@/lib/utils'
 import { CalendarDays, CalendarCheck, Clock } from 'lucide-react'
+import { SessionTabsWrapper } from './session-tabs-wrapper'
 
 const PARTICIPANT_STATUS_STYLES: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -81,186 +82,140 @@ export default async function PlayerSessionsPage() {
     return new Date(session.date) < now && session.status !== 'scheduled'
   })
 
+  const renderAvailable = () => (
+    availableSessions.length > 0 ? (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {availableSessions.map((session) => {
+          const coach = session.coach as { id: string; full_name: string } | null
+          const players = (session.session_players as { player_id: string; status: string }[]) || []
+          const activePlayerCount = players.filter(
+            (p) => p.status === 'pending' || p.status === 'approved' || p.status === 'attended'
+          ).length
+          return (
+            <SessionCard
+              key={session.id}
+              id={session.id}
+              date={session.date}
+              coachName={coach?.full_name || 'TBA'}
+              sessionType={session.session_type}
+              locationName={session.location}
+              status={session.status}
+              maxPlayers={session.max_players}
+              playerCount={activePlayerCount}
+              pricePax={session.price_per_pax}
+              notes={session.notes}
+              actions={<JoinButton sessionId={session.id} />}
+            />
+          )
+        })}
+      </div>
+    ) : (
+      <div className="bg-card rounded-xl border border-border p-8 text-center">
+        <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Belum ada session tersedia. Cek kembali nanti!</p>
+      </div>
+    )
+  )
+
+  const renderUpcoming = () => (
+    upcomingSessions.length > 0 ? (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {upcomingSessions.map((record) => {
+          const session = record.session as {
+            id: string; date: string; session_type: string; status: string
+            max_players: number; location: string | null; price_per_pax: number | null
+            notes: string | null; coach: { id: string; full_name: string } | null
+          } | null
+          if (!session) return null
+          const canCancel = record.status === 'approved' || record.status === 'pending'
+          return (
+            <Link key={`${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
+              <SessionCard
+                id={session.id}
+                date={session.date}
+                coachName={session.coach?.full_name || 'TBA'}
+                sessionType={session.session_type}
+                locationName={session.location}
+                status={session.status}
+                maxPlayers={session.max_players}
+                pricePax={session.price_per_pax}
+                notes={session.notes}
+                actions={
+                  <div className="flex items-center gap-2">
+                    <span className={cn('text-xs font-medium px-2.5 py-1 rounded-full', PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600')}>
+                      {STATUS_LABELS[record.status] || record.status}
+                    </span>
+                    {canCancel && <CancelButton sessionId={session.id} />}
+                  </div>
+                }
+              />
+            </Link>
+          )
+        })}
+      </div>
+    ) : (
+      <div className="bg-card rounded-xl border border-border p-8 text-center">
+        <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Belum ada session. Cek tab Available untuk join!</p>
+      </div>
+    )
+  )
+
+  const renderPast = () => (
+    pastSessions.length > 0 ? (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {pastSessions.map((record) => {
+          const session = record.session as {
+            id: string; date: string; session_type: string; status: string
+            max_players: number; location: string | null; price_per_pax: number | null
+            notes: string | null; coach: { id: string; full_name: string } | null
+          } | null
+          if (!session) return null
+          return (
+            <Link key={`past-${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
+              <SessionCard
+                id={session.id}
+                date={session.date}
+                coachName={session.coach?.full_name || 'TBA'}
+                sessionType={session.session_type}
+                locationName={session.location}
+                status={session.status}
+                maxPlayers={session.max_players}
+                pricePax={session.price_per_pax}
+                notes={session.notes}
+                actions={
+                  <span className={cn('text-xs font-medium px-2.5 py-1 rounded-full', PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600')}>
+                    {STATUS_LABELS[record.status] || record.status}
+                  </span>
+                }
+              />
+            </Link>
+          )
+        })}
+      </div>
+    ) : (
+      <div className="bg-card rounded-xl border border-border p-8 text-center">
+        <CalendarCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Belum ada session yang sudah selesai.</p>
+      </div>
+    )
+  )
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold">Sessions</h1>
         <p className="text-muted-foreground">Browse and manage your coaching sessions</p>
       </div>
 
-      {/* Available Sessions */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarDays className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold">Available Sessions</h2>
-        </div>
-
-        {availableSessions.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {availableSessions.map((session) => {
-              const coach = session.coach as { id: string; full_name: string } | null
-              const players = (session.session_players as { player_id: string; status: string }[]) || []
-              const activePlayerCount = players.filter(
-                (p) => p.status === 'pending' || p.status === 'approved' || p.status === 'attended'
-              ).length
-
-              return (
-                <SessionCard
-                  key={session.id}
-                  id={session.id}
-                  date={session.date}
-                  coachName={coach?.full_name || 'TBA'}
-                  sessionType={session.session_type}
-                  locationName={session.location}
-                  status={session.status}
-                  maxPlayers={session.max_players}
-                  playerCount={activePlayerCount}
-                  pricePax={session.price_per_pax}
-                  notes={session.notes}
-                  actions={<JoinButton sessionId={session.id} />}
-                />
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Belum ada session tersedia. Cek kembali nanti!
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* My Sessions - Upcoming */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-blue-500" />
-          <h2 className="text-lg font-semibold">My Upcoming Sessions</h2>
-        </div>
-
-        {upcomingSessions.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {upcomingSessions.map((record) => {
-              const session = record.session as {
-                id: string
-                date: string
-                session_type: string
-                status: string
-                max_players: number
-                location: string | null
-                price_per_pax: number | null
-                notes: string | null
-                coach: { id: string; full_name: string } | null
-              } | null
-
-              if (!session) return null
-
-              const canCancel = record.status === 'approved' || record.status === 'pending'
-
-              return (
-                <Link key={`${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
-                  <SessionCard
-                    id={session.id}
-                    date={session.date}
-                    coachName={session.coach?.full_name || 'TBA'}
-                    sessionType={session.session_type}
-                    locationName={session.location}
-                    status={session.status}
-                    maxPlayers={session.max_players}
-                    pricePax={session.price_per_pax}
-                    notes={session.notes}
-                    actions={
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            'text-xs font-medium px-2.5 py-1 rounded-full',
-                            PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
-                          )}
-                        >
-                          {STATUS_LABELS[record.status] || record.status}
-                        </span>
-                        {canCancel && (
-                          <CancelButton sessionId={session.id} />
-                        )}
-                      </div>
-                    }
-                  />
-                </Link>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Belum ada session. Browse available sessions di atas untuk join!
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* My Sessions - Past */}
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <CalendarCheck className="w-5 h-5 text-emerald-500" />
-          <h2 className="text-lg font-semibold">Past Sessions</h2>
-        </div>
-
-        {pastSessions.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {pastSessions.map((record) => {
-              const session = record.session as {
-                id: string
-                date: string
-                session_type: string
-                status: string
-                max_players: number
-                location: string | null
-                price_per_pax: number | null
-                notes: string | null
-                coach: { id: string; full_name: string } | null
-              } | null
-
-              if (!session) return null
-
-              return (
-                <Link key={`past-${record.session_id}-${record.player_id}`} href={`/player/sessions/${session.id}`}>
-                  <SessionCard
-                    id={session.id}
-                    date={session.date}
-                    coachName={session.coach?.full_name || 'TBA'}
-                    sessionType={session.session_type}
-                    locationName={session.location}
-                    status={session.status}
-                    maxPlayers={session.max_players}
-                    pricePax={session.price_per_pax}
-                    notes={session.notes}
-                    actions={
-                      <span
-                        className={cn(
-                          'text-xs font-medium px-2.5 py-1 rounded-full',
-                          PARTICIPANT_STATUS_STYLES[record.status] || 'bg-gray-100 text-gray-600'
-                        )}
-                      >
-                        {STATUS_LABELS[record.status] || record.status}
-                      </span>
-                    }
-                  />
-                </Link>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="bg-card rounded-xl border border-border p-8 text-center">
-            <CalendarCheck className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Belum ada session yang sudah selesai.
-            </p>
-          </div>
-        )}
-      </section>
+      <SessionTabsWrapper
+        availableCount={availableSessions.length}
+        upcomingCount={upcomingSessions.length}
+        pastCount={pastSessions.length}
+        availableContent={renderAvailable()}
+        upcomingContent={renderUpcoming()}
+        pastContent={renderPast()}
+      />
     </div>
   )
 }
