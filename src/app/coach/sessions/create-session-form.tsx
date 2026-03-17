@@ -299,25 +299,15 @@ export function CoachCreateSessionForm({ coachId, locations }: CoachCreateSessio
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
                   Max Players
                 </label>
-                <div className="flex gap-2">
-                  {PLAYER_OPTIONS.map((n) => {
-                    const isSelected = formData.max_players === n
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, max_players: n }))}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                          isSelected
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'bg-muted/50 text-muted-foreground'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    )
-                  })}
-                </div>
+                <input
+                  type="number"
+                  min={1}
+                  max={32}
+                  value={formData.max_players}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, max_players: Math.min(32, Math.max(1, parseInt(e.target.value) || 1)) }))}
+                  className="w-full h-11 rounded-xl border border-input bg-background px-4 text-sm font-semibold text-center"
+                  placeholder="4"
+                />
               </section>
             </div>
 

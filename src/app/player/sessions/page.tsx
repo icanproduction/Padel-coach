@@ -7,6 +7,7 @@ import { CancelButton } from './cancel-button'
 import { cn } from '@/lib/utils'
 import { CalendarDays, CalendarCheck, Clock } from 'lucide-react'
 import { SessionTabsWrapper } from './session-tabs-wrapper'
+import { AvailableSessions } from './available-sessions'
 
 const PARTICIPANT_STATUS_STYLES: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -83,38 +84,7 @@ export default async function PlayerSessionsPage() {
   })
 
   const renderAvailable = () => (
-    availableSessions.length > 0 ? (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {availableSessions.map((session) => {
-          const coach = session.coach as { id: string; full_name: string } | null
-          const players = (session.session_players as { player_id: string; status: string }[]) || []
-          const activePlayerCount = players.filter(
-            (p) => p.status === 'pending' || p.status === 'approved' || p.status === 'attended'
-          ).length
-          return (
-            <SessionCard
-              key={session.id}
-              id={session.id}
-              date={session.date}
-              coachName={coach?.full_name || 'TBA'}
-              sessionType={session.session_type}
-              locationName={session.location}
-              status={session.status}
-              maxPlayers={session.max_players}
-              playerCount={activePlayerCount}
-              pricePax={session.price_per_pax}
-              notes={session.notes}
-              actions={<JoinButton sessionId={session.id} />}
-            />
-          )
-        })}
-      </div>
-    ) : (
-      <div className="bg-card rounded-xl border border-border p-8 text-center">
-        <CalendarDays className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">Belum ada session tersedia. Cek kembali nanti!</p>
-      </div>
-    )
+    <AvailableSessions sessions={availableSessions} />
   )
 
   const renderUpcoming = () => (
