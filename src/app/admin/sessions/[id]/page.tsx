@@ -5,6 +5,7 @@ import { getSessionComments } from '@/app/actions/comment-actions'
 import { getMatchday } from '@/app/actions/matchday-actions'
 import { MatchdayPanel } from '@/components/features/matchday-panel'
 import { SessionStatusButtons, PlayerStatusButtons, ApproveCancelButton, WaitlistBadge } from './session-detail-client'
+import { AddPlayerForm } from './add-player-form'
 import { SessionComments } from '@/components/features/session-comments'
 import {
   Calendar,
@@ -29,9 +30,10 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [commentsResult, matchdayResult] = await Promise.all([
+  const [commentsResult, matchdayResult, { data: allPlayerProfiles }] = await Promise.all([
     getSessionComments(id),
     getMatchday(id),
+    supabase.from('profiles').select('id, full_name, email, avatar_url').eq('role', 'player').order('full_name'),
   ])
 
   const { data: session, error } = await supabase
@@ -392,6 +394,15 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
             })}
           </div>
         </div>
+      )}
+
+      {/* Add Player */}
+      {session.status !== 'completed' && (
+        <AddPlayerForm
+          sessionId={session.id}
+          allPlayers={allPlayerProfiles ?? []}
+          existingPlayerIds={(session.session_players || []).map((sp: any) => sp.player_id)}
+        />
       )}
 
       {/* All players */}
