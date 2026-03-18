@@ -115,6 +115,12 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
         Back to Sessions
       </Link>
 
+      {/* Desktop 2-column layout */}
+      <div className="lg:grid lg:grid-cols-5 lg:gap-6">
+
+      {/* Left column: session info */}
+      <div className="lg:col-span-2 space-y-6 mb-6 lg:mb-0">
+
       {/* Session info card */}
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -231,6 +237,10 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
           />
         </div>
       </div>
+      </div>{/* close left column */}
+
+      {/* Right column: players + matchday + comments */}
+      <div className="lg:col-span-3 space-y-6">
 
       {/* Pending requests */}
       {pendingPlayers.length > 0 && (
@@ -492,6 +502,8 @@ export default async function AdminSessionDetailPage({ params }: PageProps) {
           comments={commentsResult.data || []}
         />
       )}
+      </div>{/* close right column */}
+      </div>{/* close 2-column grid */}
     </div>
   )
 }

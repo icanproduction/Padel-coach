@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
       <NotificationPrompt />
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -109,8 +109,11 @@ export default async function AdminDashboard() {
         })}
       </div>
 
+      {/* Quick actions + Recent sessions - side by side on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
       {/* Quick actions */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-6 lg:col-span-1">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
         <div className="space-y-2">
           <Link
@@ -161,7 +164,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent sessions */}
-      <div>
+      <div className="lg:col-span-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Recent Sessions</h2>
           <Link
@@ -216,6 +219,7 @@ export default async function AdminDashboard() {
           </div>
         )}
       </div>
+      </div>{/* close grid wrapper */}
     </div>
   )
 }
