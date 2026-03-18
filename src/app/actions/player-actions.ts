@@ -339,3 +339,43 @@ export async function updateCoach(coachId: string, input: {
     return { error: 'Failed to update coach' }
   }
 }
+
+export async function deleteCoach(coachId: string): Promise<{ data?: { success: boolean }; error?: string }> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Only admin can delete coaches' }
+    }
+
+    // Delete from profiles table
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', coachId)
+      .eq('role', 'coach')
+
+    if (error) return { error: error.message }
+
+    // Also delete from auth.users using service role client
+    try {
+      const adminClient = createServiceRoleClient()
+      await adminClient.auth.admin.deleteUser(coachId)
+    } catch {
+      // Auth user deletion failure should not block the operation
+    }
+
+    revalidatePath('/admin/coaches')
+    return { data: { success: true } }
+  } catch {
+    return { error: 'Failed to delete coach' }
+  }
+}

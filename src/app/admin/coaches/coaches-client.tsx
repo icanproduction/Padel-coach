@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createCoach, approveCoach, unapproveCoach, updateCoach } from '@/app/actions/player-actions'
+import { createCoach, approveCoach, unapproveCoach, updateCoach, deleteCoach } from '@/app/actions/player-actions'
 import type { Profile } from '@/types/database'
 import {
   Plus,
@@ -16,6 +16,7 @@ import {
   XCircle,
   Search,
   Pencil,
+  Trash2,
 } from 'lucide-react'
 
 interface CoachesClientProps {
@@ -30,6 +31,7 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
   const [actionId, setActionId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [editingCoach, setEditingCoach] = useState<Profile | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -130,6 +132,21 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
       if (result.error) {
         setError(result.error)
       } else {
+        setEditingCoach(null)
+        router.refresh()
+      }
+    })
+  }
+
+  function handleDelete() {
+    if (!editingCoach) return
+    startTransition(async () => {
+      const result = await deleteCoach(editingCoach.id)
+      if (result.error) {
+        setError(result.error)
+        setShowDeleteConfirm(false)
+      } else {
+        setShowDeleteConfirm(false)
         setEditingCoach(null)
         router.refresh()
       }
@@ -480,8 +497,8 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
               </form>
             </div>
 
-            {/* Submit */}
-            <div className="px-4 py-3 border-t border-border bg-card">
+            {/* Submit + Delete */}
+            <div className="px-4 py-3 border-t border-border bg-card space-y-2">
               <button
                 type="submit"
                 form="edit-coach-form"
@@ -490,6 +507,49 @@ export function CoachesClient({ coaches }: CoachesClientProps) {
               >
                 {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 {isPending ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isPending}
+                className="w-full py-3 text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Hapus Coach
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && editingCoach && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isPending) setShowDeleteConfirm(false)
+          }}
+        >
+          <div className="bg-card rounded-2xl border border-border shadow-lg w-full max-w-sm mx-4 p-6">
+            <h3 className="text-base font-bold text-center mb-2">Hapus Coach?</h3>
+            <p className="text-sm text-muted-foreground text-center mb-5">
+              Apakah kamu yakin ingin menghapus <strong>{editingCoach.full_name}</strong>? Aksi ini tidak bisa dibatalkan.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isPending}
+                className="flex-1 py-2.5 text-sm font-medium rounded-xl border border-border hover:bg-accent transition-colors disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isPending ? 'Menghapus...' : 'Ya, Hapus'}
               </button>
             </div>
           </div>

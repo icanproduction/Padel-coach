@@ -172,6 +172,19 @@ export async function deleteSession(sessionId: string) {
       return { error: 'Only admin or coach can delete sessions' }
     }
 
+    // Fetch session details and participants BEFORE deleting
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('date, coach_id')
+      .eq('id', sessionId)
+      .single()
+
+    const { data: participants } = await supabase
+      .from('session_players')
+      .select('player_id, status')
+      .eq('session_id', sessionId)
+      .in('status', ['pending', 'approved', 'attended'])
+
     // Delete session players first
     await supabase
       .from('session_players')
@@ -191,6 +204,38 @@ export async function deleteSession(sessionId: string) {
       .eq('id', sessionId)
 
     if (error) return { error: error.message }
+
+    // Send push notifications about session cancellation
+    try {
+      const { sendPushToUser } = await import('@/lib/push')
+      if (session) {
+        const sessionDate = new Date(session.date).toLocaleDateString('id-ID', {
+          weekday: 'short', day: 'numeric', month: 'short',
+        })
+        const payload = {
+          title: 'Session Dibatalkan',
+          body: `Session tanggal ${sessionDate} telah dibatalkan.`,
+          url: '/player/sessions',
+        }
+
+        // Notify the coach
+        if (session.coach_id) {
+          await sendPushToUser(session.coach_id, {
+            ...payload,
+            url: '/coach/sessions',
+          })
+        }
+
+        // Notify all participants
+        if (participants && participants.length > 0) {
+          await Promise.allSettled(
+            participants.map((p) => sendPushToUser(p.player_id, payload))
+          )
+        }
+      }
+    } catch {
+      // Push notification failure should not block deletion
+    }
 
     revalidatePath('/admin/sessions')
     revalidatePath('/coach/sessions')
