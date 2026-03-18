@@ -1,8 +1,6 @@
-import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { SessionCard } from '@/components/features/session-card'
 import { SessionsClient } from './sessions-client'
-import { CalendarDays } from 'lucide-react'
+import { SessionFilter } from './session-filter'
 import type { Profile, Location } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -25,7 +23,8 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
         session_players(player_id, status),
         locations(id, name, address, maps_link, courts)
       `)
-      .order('date', { ascending: false }),
+      .order('date', { ascending: false })
+      .limit(100),
     supabase
       .from('profiles')
       .select('*')
@@ -38,7 +37,7 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
       .order('name'),
   ])
 
-  const sessions = sessionsResult.data
+  const sessions = sessionsResult.data ?? []
   const coaches = (coachesResult.data as Profile[]) ?? []
   const locations = (locationsResult.data as Location[]) ?? []
   const defaultOpen = params?.create === 'true'
@@ -56,48 +55,15 @@ export default async function AdminSessionsPage({ searchParams }: PageProps) {
         <SessionsClient coaches={coaches} locations={locations} defaultOpen={defaultOpen} />
       </div>
 
-      {/* Sessions list */}
+      {/* Filtered sessions */}
       {sessionsResult.error ? (
         <div className="bg-card rounded-xl border border-destructive/50 p-6 text-center">
           <p className="text-sm text-destructive">
             Failed to load sessions: {sessionsResult.error.message}
           </p>
         </div>
-      ) : sessions && sessions.length > 0 ? (
-        <div className="space-y-3">
-          {sessions.map((session: any) => (
-            <Link key={session.id} href={`/admin/sessions/${session.id}`}>
-              <SessionCard
-                id={session.id}
-                date={session.date}
-                coachName={session.coach?.full_name ?? 'Unknown'}
-                sessionType={session.session_type}
-                locationName={session.locations?.name}
-                locationMapsLink={session.locations?.maps_link}
-                courtsBooked={session.courts_booked}
-                durationHours={session.duration_hours}
-                reclubUrl={session.reclub_url}
-                pricePax={session.price_per_pax}
-                status={session.status}
-                maxPlayers={session.max_players}
-                playerCount={
-                  session.session_players?.filter(
-                    (p: any) =>
-                      p.status === 'approved' || p.status === 'attended'
-                  ).length ?? 0
-                }
-                notes={session.notes}
-              />
-            </Link>
-          ))}
-        </div>
       ) : (
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
-            No sessions found. Create your first session to get started.
-          </p>
-        </div>
+        <SessionFilter sessions={sessions} />
       )}
     </div>
   )
