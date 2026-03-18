@@ -356,25 +356,13 @@ export async function deleteCoach(coachId: string): Promise<{ data?: { success: 
       return { error: 'Only admin can delete coaches' }
     }
 
-    // Clear foreign key references in sessions
+    // Clean up non-cascading references
     const adminClient = createServiceRoleClient()
-    await adminClient
-      .from('sessions')
-      .update({ created_by: null })
-      .eq('created_by', coachId)
-    await adminClient
-      .from('sessions')
-      .update({ coach_id: user.id })
-      .eq('coach_id', coachId)
-
-    // Delete related records
-    await adminClient.from('session_players').delete().eq('player_id', coachId)
-    await adminClient.from('session_comments').delete().eq('author_id', coachId)
-    await adminClient.from('assessments').delete().eq('coach_id', coachId)
     await adminClient.from('push_subscriptions').delete().eq('user_id', coachId)
     await adminClient.from('notifications').delete().eq('user_id', coachId)
 
-    // Delete from profiles table
+    // Delete profile — FK constraints set to ON DELETE SET NULL
+    // so sessions, assessments, comments keep their data (coach_id becomes null)
     const { error } = await adminClient
       .from('profiles')
       .delete()
